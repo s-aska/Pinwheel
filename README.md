@@ -1,10 +1,10 @@
-![Pinwheel](http://aska.pw/img/pinwheel.svg)
+![Pinwheel](http://aska.pw/img/pinwheel.svg?2014-12-17)
 
 [![Build Status](https://travis-ci.org/s-aska/Pinwheel.svg)](https://travis-ci.org/s-aska/Pinwheel)
 
 Pinwheel is an Image Loading library written in Swift
 
-:warning: !!! alpha quality !!!
+:warning: **DEVELOPER RELEASE**
 
 ## Features
 
@@ -13,9 +13,9 @@ Pinwheel is an Image Loading library written in Swift
 - [x] MemoryCache
 - [ ] DiskCache
 - [x] Combine HTTP Request to the same URL.
-- [ ] Network Timeout settings
-- [ ] Cache settings
-- [ ] ImageLoadingListener
+- [ ] Network Timeout Settings
+- [ ] Cache Settings
+- [ ] ImageLoadingListener Support
 
 
 ## Requirements
@@ -64,8 +64,9 @@ import Pinwheel
 class ImageLoaderClient {
 
     struct Options {
-        static let default = Pinwheel.DisplayOptions.Builder()
+        static let picture = Pinwheel.DisplayOptions.Builder()
             .displayer(Pinwheel.FadeInDisplayer())
+            .queuePriority(NSOperationQueuePriority.Low)
             .build()
 
         static let userIcon = Pinwheel.DisplayOptions.Builder()
@@ -80,7 +81,7 @@ class ImageLoaderClient {
     }
 
     class func displayImage(url: NSURL, imageView: UIImageView) {
-        Pinwheel.displayImage(url, imageView: imageView, options: Options.default)
+        Pinwheel.displayImage(url, imageView: imageView, options: Options.picture)
     }
 
     class func displayUserIcon(url: NSURL, imageView: UIImageView) {
