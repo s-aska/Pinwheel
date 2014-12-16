@@ -70,12 +70,12 @@ class ImageLoaderClient {
             .build()
 
         static let userIcon = Pinwheel.DisplayOptions.Builder()
-            .addFilter(RoundedFilter(6, w: 42, h: 42), hook: .BeforeMemory)
+            .addFilter(RoundedFilter(r: 6, w: 42, h: 42), hook: .BeforeMemory)
             .displayer(Pinwheel.FadeInDisplayer())
             .build()
 
         static let userIconXS = Pinwheel.DisplayOptions.Builder()
-            .addFilter(RoundedFilter(2, w: 16, h: 16), hook: .BeforeMemory)
+            .addFilter(RoundedFilter(r: 2, w: 16, h: 16), hook: .BeforeMemory)
             .displayer(Pinwheel.FadeInDisplayer())
             .build()
     }
