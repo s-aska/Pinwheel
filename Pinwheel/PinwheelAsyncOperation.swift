@@ -94,5 +94,31 @@ extension Pinwheel {
         
     }
     
+    class DownloadOperation: AsyncOperation {
+        
+        let task: NSURLSessionDownloadTask
+        
+        init(_ task: NSURLSessionDownloadTask) {
+            self.task = task
+            super.init()
+        }
+        
+        override func start() {
+            super.start()
+            state = .Executing
+            task.resume()
+        }
+        
+        override func cancel() {
+            super.cancel()
+            state = .Finished
+            task.cancel()
+        }
+        
+        func finish() {
+            state = .Finished
+        }
+        
+    }
 }
 

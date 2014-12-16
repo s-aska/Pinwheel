@@ -11,19 +11,25 @@ import Foundation
 public extension Pinwheel {
     
     public struct Configuration {
-        let maxConcurrent: Int
-        let defaultQueuePriority: NSOperationQueuePriority
-        let isDebug: Bool
+        public let maxConcurrent: Int
+        public let defaultQueuePriority: NSOperationQueuePriority
+        public let defaultTimeoutIntervalForRequest: NSTimeInterval?
+        public let defaultTimeoutIntervalForResource: NSTimeInterval?
+        public let isDebug: Bool
         
         init (_ builder: Builder) {
             self.maxConcurrent = builder.maxConcurrent
             self.defaultQueuePriority = builder.defaultQueuePriority
+            self.defaultTimeoutIntervalForRequest = builder.defaultTimeoutIntervalForRequest
+            self.defaultTimeoutIntervalForResource = builder.defaultTimeoutIntervalForResource
             self.isDebug = builder.isDebug
         }
         
         public class Builder {
             var maxConcurrent = 5
             var defaultQueuePriority = NSOperationQueuePriority.Normal
+            var defaultTimeoutIntervalForRequest: NSTimeInterval?
+            var defaultTimeoutIntervalForResource: NSTimeInterval?
             var isDebug = false
             
             public init () {
@@ -36,6 +42,16 @@ public extension Pinwheel {
             
             public func defaultQueuePriority(defaultQueuePriority: NSOperationQueuePriority) -> Builder {
                 self.defaultQueuePriority = defaultQueuePriority
+                return self
+            }
+            
+            public func defaultTimeoutIntervalForRequest(defaultTimeoutIntervalForRequest: NSTimeInterval) -> Builder {
+                self.defaultTimeoutIntervalForRequest = defaultTimeoutIntervalForRequest
+                return self
+            }
+            
+            public func defaultTimeoutIntervalForResource(defaultTimeoutIntervalForResource: NSTimeInterval) -> Builder {
+                self.defaultTimeoutIntervalForResource = defaultTimeoutIntervalForResource
                 return self
             }
             

@@ -11,15 +11,19 @@ import Foundation
 public extension Pinwheel {
     
     public struct DisplayOptions {
-        let queuePriority: NSOperationQueuePriority?
-        let diskCache: PinwheelDiskCacheProtocol?
-        let memoryCache: PinwheelMemoryCacheProtocol?
-        let beforeDiskFilters: [PinwheelFilter]
-        let beforeMemoryFilters: [PinwheelFilter]
-        let displayer: PinwheelDisplayer
+        public let queuePriority: NSOperationQueuePriority?
+        public let timeoutIntervalForRequest: NSTimeInterval?
+        public let timeoutIntervalForResource: NSTimeInterval?
+        public let diskCache: PinwheelDiskCacheProtocol?
+        public let memoryCache: PinwheelMemoryCacheProtocol?
+        public let beforeDiskFilters: [PinwheelFilter]
+        public let beforeMemoryFilters: [PinwheelFilter]
+        public let displayer: PinwheelDisplayer
         
         init (_ builder: Builder) {
             self.queuePriority = builder.queuePriority
+            self.timeoutIntervalForRequest = builder.timeoutIntervalForRequest
+            self.timeoutIntervalForResource = builder.timeoutIntervalForResource
             self.diskCache = builder.diskCache
             self.memoryCache = builder.memoryCache
             self.beforeDiskFilters = builder.beforeDiskFilters
@@ -29,6 +33,8 @@ public extension Pinwheel {
         
         public class Builder {
             var queuePriority: NSOperationQueuePriority?
+            var timeoutIntervalForRequest: NSTimeInterval?
+            var timeoutIntervalForResource: NSTimeInterval?
             var diskCache: PinwheelDiskCacheProtocol? = Pinwheel.DiskCache()
             var memoryCache: PinwheelMemoryCacheProtocol? = Pinwheel.MemoryCache()
             var beforeDiskFilters = [PinwheelFilter]()
@@ -40,6 +46,16 @@ public extension Pinwheel {
             
             public func queuePriority(queuePriority: NSOperationQueuePriority) -> Builder {
                 self.queuePriority = queuePriority
+                return self
+            }
+            
+            public func timeoutIntervalForRequest(timeoutIntervalForRequest: NSTimeInterval) -> Builder {
+                self.timeoutIntervalForRequest = timeoutIntervalForRequest
+                return self
+            }
+            
+            public func timeoutIntervalForResource(timeoutIntervalForResource: NSTimeInterval) -> Builder {
+                self.timeoutIntervalForResource = timeoutIntervalForResource
                 return self
             }
             
