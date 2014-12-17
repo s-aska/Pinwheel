@@ -80,8 +80,22 @@ public class Pinwheel {
             let request = Request(url: url, imageView: imageView, options: options)
             
             dispatch_sync(Static.serial) {
+                let oldDownloadKey = Static.imageViewState[imageView.hashValue]
                 Static.imageViewState[imageView.hashValue] = request.downloadKey
                 self.DLog("[debug] \(request.downloadKey) request hashValue:\(imageView.hashValue)")
+                
+                if oldDownloadKey != nil {
+                    let visibles = Array(Static.imageViewState.values.filter { $0 == oldDownloadKey })
+                    if visibles.count == 0 {
+                        let queuePriority = NSOperationQueuePriority.VeryLow
+                        for operation in Static.queue.operations as [Pinwheel.DownloadOperation] {
+                            if operation.name == oldDownloadKey && operation.queuePriority != queuePriority {
+                                operation.queuePriority = queuePriority
+                                self.DLog("[debug] \(request.downloadKey) priority down")
+                            }
+                        }
+                    }
+                }
             }
             
             if var image = options.memoryCache?.get(request.memoryCaheKey) {
@@ -94,13 +108,20 @@ public class Pinwheel {
                     assertionFailure("Not implements showImageOnFail.")
                 }
             } else {
+                let queuePriority = options.queuePriority ?? Static.config.defaultQueuePriority
                 dispatch_sync(Static.serial) {
                     if let requests = Static.requests[request.downloadKey] {
                         Static.requests[request.downloadKey] = requests + [request]
+                        for operation in Static.queue.operations as [Pinwheel.DownloadOperation] {
+                            if operation.name == request.downloadKey && operation.queuePriority != queuePriority {
+                                operation.queuePriority = queuePriority
+                                self.DLog("[debug] \(request.downloadKey) priority up")
+                            }
+                        }
                     } else {
                         Static.requests[request.downloadKey] = []
                         let task = DownloadTask(request)
-                        task.operation?.queuePriority = options.queuePriority ?? Static.config.defaultQueuePriority
+                        task.operation?.queuePriority = queuePriority
                         Static.queue.addOperation(task.operation!) // Download from Network
                     }
                 }
@@ -254,6 +275,7 @@ public class Pinwheel {
             let session = NSURLSession(configuration: config, delegate: self, delegateQueue: nil)
             
             operation = DownloadOperation(session.downloadTaskWithURL(request.url))
+            operation?.name = request.downloadKey
         }
         
         func URLSession(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, didFinishDownloadingToURL location: NSURL) {
