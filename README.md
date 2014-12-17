@@ -14,7 +14,7 @@ Pinwheel is an Image Loading library written in Swift
 - [x] Combine HTTP Request to the same URL
 - [x] MemoryCache
 - [ ] DiskCache
-- [x] Timeout Settings (timeoutIntervalForRequest/timeoutIntervalForResource)
+- [x] Timeout Settings ( timeoutIntervalForRequest / timeoutIntervalForResource )
 - [ ] Cache Settings
 - [ ] ImageLoadingListener
 
