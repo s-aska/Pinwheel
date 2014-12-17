@@ -1,4 +1,4 @@
-![Pinwheel](http://aska.pw/img/pinwheel.svg?2014-12-17)
+![Pinwheel](http://aska.pw/img/pinwheel.svg?2014-12-18)
 
 [![Build Status](https://travis-ci.org/s-aska/Pinwheel.svg)](https://travis-ci.org/s-aska/Pinwheel)
 
@@ -13,7 +13,8 @@ Pinwheel is an Image Loading library written in Swift
 - [x] MemoryCache
 - [ ] DiskCache
 - [x] Combine HTTP Request to the same URL.
-- [ ] Network Timeout Settings
+- [x] timeoutIntervalForRequest Support
+- [x] timeoutIntervalForResource Support
 - [ ] Cache Settings
 - [ ] ImageLoadingListener Support
 

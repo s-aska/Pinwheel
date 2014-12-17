@@ -8,6 +8,7 @@
 
 import UIKit
 import XCTest
+import Pinwheel
 
 class PinwheelTests: XCTestCase {
     
@@ -21,9 +22,30 @@ class PinwheelTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        XCTAssert(true, "Pass")
+    func testConfiguration() {
+        var config = Pinwheel.Configuration.Builder()
+            .maxConcurrent(6)
+            .defaultQueuePriority(NSOperationQueuePriority.VeryHigh)
+            .defaultTimeoutIntervalForRequest(8)
+            .defaultTimeoutIntervalForResource(9)
+            .build()
+        
+        XCTAssertEqual(config.maxConcurrent, 6)
+        XCTAssertEqual(config.defaultQueuePriority, NSOperationQueuePriority.VeryHigh)
+        XCTAssertEqual(config.defaultTimeoutIntervalForRequest!, 8)
+        XCTAssertEqual(config.defaultTimeoutIntervalForResource!, 9)
+    }
+    
+    func testDisplayOptions() {
+        var options = Pinwheel.DisplayOptions.Builder()
+            .queuePriority(NSOperationQueuePriority.VeryLow)
+            .timeoutIntervalForRequest(8)
+            .timeoutIntervalForResource(9)
+            .build()
+        
+        XCTAssertEqual(options.queuePriority!, NSOperationQueuePriority.VeryLow)
+        XCTAssertEqual(options.timeoutIntervalForRequest!, 8)
+        XCTAssertEqual(options.timeoutIntervalForResource!, 9)
     }
     
     func testPerformanceExample() {

@@ -1,0 +1,4 @@
+language: objective-c
+xcode_project: Pinwheel.xcodeproj
+xcode_scheme: PinwheelTests
+xcode_sdk: iphonesimulator
