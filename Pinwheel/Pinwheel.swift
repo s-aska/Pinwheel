@@ -10,6 +10,8 @@ import UIKit
 
 public class Pinwheel {
     
+    // MARK: - Types
+    
     public enum LoadedFrom {
         case Memory
         case Disk
@@ -21,11 +23,16 @@ public class Pinwheel {
         case BeforeMemory
     }
     
-    class func DLog(message: String, function: String = __FUNCTION__) {
-        if Static.config.isDebug {
-            NSLog(message)
-        }
+    struct Static {
+        private static let serial = dispatch_queue_create("pw.aska.pinwheel.serial", DISPATCH_QUEUE_SERIAL)
+        private static var defaultDisplayImageOptions: DisplayOptions = DisplayOptions.Builder().build()
+        private static var imageViewState = [Int: String]()
+        private static let queue = NSOperationQueue()
+        private static var requests = [String: [Request]]()
+        private static var config = Configuration.Builder().build()
     }
+    
+    // MARK: - Request
     
     class Request {
         let url: NSURL
@@ -57,14 +64,7 @@ public class Pinwheel {
         }
     }
     
-    struct Static {
-        private static let serial = dispatch_queue_create("pw.aska.pinwheel.serial", DISPATCH_QUEUE_SERIAL)
-        private static var defaultDisplayImageOptions: DisplayOptions = DisplayOptions.Builder().build()
-        private static var imageViewState = [Int: String]()
-        private static let queue = NSOperationQueue()
-        private static var requests = [String: [Request]]()
-        private static var config = Configuration.Builder().build()
-    }
+    // MARK: - Public Methods
     
     public class func setup(config: Configuration) {
         Static.config = config
@@ -80,19 +80,17 @@ public class Pinwheel {
             let request = Request(url: url, imageView: imageView, options: options)
             
             dispatch_sync(Static.serial) {
-                let oldDownloadKey = Static.imageViewState[imageView.hashValue]
+                let oldDownloadKeyOpt = Static.imageViewState[imageView.hashValue]
                 Static.imageViewState[imageView.hashValue] = request.downloadKey
-                self.DLog("[debug] \(request.downloadKey) request hashValue:\(imageView.hashValue)")
+                Pinwheel.DLog("[debug] \(request.downloadKey) request hashValue:\(imageView.hashValue)")
                 
-                if oldDownloadKey != nil {
+                if let oldDownloadKey = oldDownloadKeyOpt {
                     let visibles = Array(Static.imageViewState.values.filter { $0 == oldDownloadKey })
                     if visibles.count == 0 {
                         let queuePriority = NSOperationQueuePriority.VeryLow
-                        for operation in Static.queue.operations as [Pinwheel.DownloadOperation] {
-                            if operation.name == oldDownloadKey && operation.queuePriority != queuePriority {
-                                operation.queuePriority = queuePriority
-                                self.DLog("[debug] \(request.downloadKey) priority down")
-                            }
+                        let count = self.updateQueuePriorityByName(oldDownloadKey, queuePriority: queuePriority)
+                        if count > 0 {
+                            Pinwheel.DLog("[debug] \(oldDownloadKey) priority down \(count) operations")
                         }
                     }
                 }
@@ -104,19 +102,18 @@ public class Pinwheel {
                 if var image = UIImage(data: data) {
                     self.onSuccess(request, image: image, loadedFrom: .Disk)
                 } else {
+                    options.diskCache?.remove(request.diskCaheKey)
                     // FIXME: implements showImageOnFail.
                     assertionFailure("Not implements showImageOnFail.")
                 }
             } else {
-                let queuePriority = options.queuePriority ?? Static.config.defaultQueuePriority
                 dispatch_sync(Static.serial) {
+                    let queuePriority = options.queuePriority ?? Static.config.defaultQueuePriority
                     if let requests = Static.requests[request.downloadKey] {
                         Static.requests[request.downloadKey] = requests + [request]
-                        for operation in Static.queue.operations as [Pinwheel.DownloadOperation] {
-                            if operation.name == request.downloadKey && operation.queuePriority != queuePriority {
-                                operation.queuePriority = queuePriority
-                                self.DLog("[debug] \(request.downloadKey) priority up")
-                            }
+                        let count = self.updateQueuePriorityByName(request.downloadKey, queuePriority: queuePriority)
+                        if count > 0 {
+                            Pinwheel.DLog("[debug] \(request.downloadKey) priority up \(count) operations")
                         }
                     } else {
                         Static.requests[request.downloadKey] = []
@@ -128,6 +125,29 @@ public class Pinwheel {
             }
         })
     }
+    
+    // MARK: - QueueManager
+    
+    class func updateQueuePriorityByName(name: String, queuePriority: NSOperationQueuePriority) -> Int {
+        var count = 0
+        for operation in Static.queue.operations as [Pinwheel.DownloadOperation] {
+            if operation.name == name && operation.queuePriority != queuePriority {
+                operation.queuePriority = queuePriority
+                count++
+            }
+        }
+        return count
+    }
+    
+    // MARK: - Logger
+    
+    class func DLog(message: String, function: String = __FUNCTION__) {
+        if Static.config.isDebug {
+            NSLog(message)
+        }
+    }
+    
+    // MARK: - Filter
     
     class func filterAndSaveDisk(request: Request, data: NSData) -> UIImage? {
         if var image = UIImage(data: data) {
@@ -153,6 +173,8 @@ public class Pinwheel {
         request.options.memoryCache?.set(request.memoryCaheKey, image: image)
         return image
     }
+    
+    // MARK: - Event
     
     class func onSuccess(request: Request, image sourceImage: UIImage, loadedFrom: LoadedFrom) {
         
@@ -234,24 +256,8 @@ public class Pinwheel {
         // FIXME: implements showImageOnFail.
     }
     
-    class func onLoadingComplete(request: Request, data: NSData) {
-        
-        // Check UIImage compatible
-        if var image = filterAndSaveDisk(request, data: data) {
-            onSuccess(request, image: image, loadedFrom: .Network)
-        } else {
-            onFailure(request)
-            
-            DLog("[error] \(request.downloadKey) download failure:Can't convert UIImage")
-        }
-    }
-    
-    class func onLoadingFailed(request: Request, error: NSError) {
-        onFailure(request)
-        
-        DLog("[warn] \(request.downloadKey) download failure:\(error.debugDescription)")
-    }
-    
+    // MARK: - NSURLSessionDownloadDelegate
+
     class DownloadTask: NSObject, NSURLSessionDownloadDelegate {
         
         let request: Request
@@ -274,16 +280,23 @@ public class Pinwheel {
             
             let session = NSURLSession(configuration: config, delegate: self, delegateQueue: nil)
             
-            operation = DownloadOperation(session.downloadTaskWithURL(request.url))
-            operation?.name = request.downloadKey
+            operation = DownloadOperation(task: session.downloadTaskWithURL(request.url), name: request.downloadKey)
         }
         
         func URLSession(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, didFinishDownloadingToURL location: NSURL) {
-            let data = NSData(contentsOfURL: location)
-            if data != nil && data?.length > 0 {
-                Pinwheel.onLoadingComplete(request, data: data!)
+            if let data = NSData(contentsOfURL: location) {
+                
+                // Check UIImage compatible
+                if var image = Pinwheel.filterAndSaveDisk(request, data: data) {
+                    Pinwheel.onSuccess(request, image: image, loadedFrom: .Network)
+                } else {
+                    Pinwheel.onFailure(request)
+                    Pinwheel.DLog("[error] \(request.downloadKey) download failure:Can't convert UIImage")
+                }
                 operation?.finish()
             } else {
+                Pinwheel.onFailure(request)
+                Pinwheel.DLog("[error] \(request.downloadKey) download failure:Can't convert NSData")
                 operation?.cancel()
             }
             operation = nil
@@ -291,7 +304,8 @@ public class Pinwheel {
         
         func URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError error: NSError?) {
             if let e = error {
-                Pinwheel.onLoadingFailed(request, error: e)
+                Pinwheel.onFailure(request)
+                Pinwheel.DLog("[warn] \(request.downloadKey) download failure:\(e.debugDescription)")
             }
         }
     }

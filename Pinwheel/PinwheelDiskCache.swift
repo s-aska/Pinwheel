@@ -19,5 +19,8 @@ extension Pinwheel {
         func set(key: String, data: NSData) {
             
         }
+        
+        func remove(key: String) {
+        }
     }
 }

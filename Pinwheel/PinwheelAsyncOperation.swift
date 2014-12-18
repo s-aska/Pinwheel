@@ -98,9 +98,10 @@ extension Pinwheel {
         
         let task: NSURLSessionDownloadTask
         
-        init(_ task: NSURLSessionDownloadTask) {
+        init(task: NSURLSessionDownloadTask, name: String) {
             self.task = task
             super.init()
+            self.name = name
         }
         
         override func start() {

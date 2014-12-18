@@ -13,6 +13,8 @@ public protocol PinwheelDiskCacheProtocol {
     func get(key: String) -> NSData?
     
     func set(key: String, data: NSData)
+    
+    func remove(key: String)
 }
 
 public protocol PinwheelMemoryCacheProtocol {
