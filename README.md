@@ -19,6 +19,10 @@ Pinwheel is an Image Loading library written in Swift
 - [ ] ImageLoadingListener
 
 
+## Architecture
+
+![Architecture](http://aska.pw/img/pinwheel-architecture.svg?2014-12-23)
+
 ## Requirements
 
 - iOS 8+
