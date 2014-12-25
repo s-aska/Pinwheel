@@ -28,6 +28,7 @@ public class Pinwheel {
         private static var defaultDisplayImageOptions: DisplayOptions = DisplayOptions.Builder().build()
         private static var imageViewState = [Int: String]()
         private static let queue = NSOperationQueue()
+        private static var stack = [DownloadOperation]()
         private static var requests = [String: [Request]]()
         private static var config = Configuration.Builder().build()
     }
@@ -80,20 +81,8 @@ public class Pinwheel {
             let request = Request(url: url, imageView: imageView, options: options)
             
             dispatch_sync(Static.serial) {
-                let oldDownloadKeyOpt = Static.imageViewState[imageView.hashValue]
                 Static.imageViewState[imageView.hashValue] = request.downloadKey
                 Pinwheel.DLog("[debug] \(request.downloadKey) request hashValue:\(imageView.hashValue)")
-                
-                if let oldDownloadKey = oldDownloadKeyOpt {
-                    let visibles = Array(Static.imageViewState.values.filter { $0 == oldDownloadKey })
-                    if visibles.count == 0 {
-                        let queuePriority = NSOperationQueuePriority.VeryLow
-                        let count = self.updateQueuePriorityByName(oldDownloadKey, queuePriority: queuePriority)
-                        if count > 0 {
-                            Pinwheel.DLog("[debug] \(oldDownloadKey) priority down \(count) operations")
-                        }
-                    }
-                }
             }
             
             if var image = options.memoryCache?.get(request.memoryCaheKey) {
@@ -111,15 +100,20 @@ public class Pinwheel {
                     let queuePriority = options.queuePriority ?? Static.config.defaultQueuePriority
                     if let requests = Static.requests[request.downloadKey] {
                         Static.requests[request.downloadKey] = requests + [request]
-                        let count = self.updateQueuePriorityByName(request.downloadKey, queuePriority: queuePriority)
-                        if count > 0 {
-                            Pinwheel.DLog("[debug] \(request.downloadKey) priority up \(count) operations")
+                        if let index = Pinwheel.findStack(request.downloadKey) {
+                            if index < (Static.stack.count - 1) {
+                                Static.stack.append(Static.stack.removeAtIndex(index))
+                            }
                         }
                     } else {
                         Static.requests[request.downloadKey] = []
                         let task = DownloadTask(request)
                         task.operation?.queuePriority = queuePriority
-                        Static.queue.addOperation(task.operation!) // Download from Network
+                        if Static.queue.operationCount >= Static.queue.maxConcurrentOperationCount {
+                            Static.stack.append(task.operation!)
+                        } else {
+                            Static.queue.addOperation(task.operation!) // Download from Network
+                        }
                     }
                 }
             }
@@ -128,15 +122,27 @@ public class Pinwheel {
     
     // MARK: - QueueManager
     
-    class func updateQueuePriorityByName(name: String, queuePriority: NSOperationQueuePriority) -> Int {
-        var count = 0
-        for operation in Static.queue.operations as [Pinwheel.DownloadOperation] {
-            if operation.name == name && operation.queuePriority != queuePriority {
-                operation.queuePriority = queuePriority
-                count++
+    class func findStack(name: String) -> Int? {
+        var index = 0
+        for operation in Static.stack {
+            if operation.name == name {
+                return index
+            }
+            index++
+        }
+        return nil
+    }
+    
+    class func popStack() {
+        dispatch_sync(Static.serial) {
+            if Static.stack.isEmpty {
+                return
+            }
+            if Static.queue.operationCount <= Static.queue.maxConcurrentOperationCount {
+                Static.queue.addOperation(Static.stack.removeLast())
+                Pinwheel.DLog("[debug] popStack views:\(Static.imageViewState.count) queue:\(Static.queue.operationCount) stack:\(Static.stack.count)")
             }
         }
-        return count
     }
     
     // MARK: - Logger
@@ -235,7 +241,7 @@ public class Pinwheel {
             }
         }
         
-        DLog("[debug] \(request.downloadKey) views:\(displayViews) groups:\(displayViewGroups) queue views:\(Static.imageViewState.count) urls:\(Static.queue.operationCount)")
+        DLog("[debug] \(request.downloadKey) views:\(displayViews) groups:\(displayViewGroups)")
     }
     
     class func onFailure(request: Request) {
@@ -281,6 +287,9 @@ public class Pinwheel {
             let session = NSURLSession(configuration: config, delegate: self, delegateQueue: nil)
             
             operation = DownloadOperation(task: session.downloadTaskWithURL(request.url), name: request.downloadKey)
+            operation?.completionBlock = {
+                Pinwheel.popStack()
+            }
         }
         
         func URLSession(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, didFinishDownloadingToURL location: NSURL) {

@@ -16,6 +16,8 @@ extension Pinwheel {
             static let instance = MemoryCache()
         }
         
+        class func sharedInstance() -> MemoryCache { return Static.instance }
+        
         var cache = NSCache()
         
         func get(key: String) -> UIImage? {

@@ -66,37 +66,31 @@ memory Many consume, but the cost of the display is low.
 import UIKit
 import Pinwheel
 
-class ImageLoaderClient {
+struct MyDisplayOptions {
+    static let photo = Pinwheel.DisplayOptions.Builder()
+        .displayer(Pinwheel.FadeInDisplayer())
+        .queuePriority(NSOperationQueuePriority.Low)
+        .build()
 
-    struct Options {
-        static let picture = Pinwheel.DisplayOptions.Builder()
-            .displayer(Pinwheel.FadeInDisplayer())
-            .queuePriority(NSOperationQueuePriority.Low)
-            .build()
+    static let userIcon = Pinwheel.DisplayOptions.Builder()
+        .addFilter(RoundedFilter(r: 6, w: 42, h: 42), hook: .BeforeMemory)
+        .displayer(Pinwheel.FadeInDisplayer())
+        .build()
 
-        static let userIcon = Pinwheel.DisplayOptions.Builder()
-            .addFilter(RoundedFilter(r: 6, w: 42, h: 42), hook: .BeforeMemory)
-            .displayer(Pinwheel.FadeInDisplayer())
-            .build()
-
-        static let userIconXS = Pinwheel.DisplayOptions.Builder()
-            .addFilter(RoundedFilter(r: 2, w: 16, h: 16), hook: .BeforeMemory)
-            .displayer(Pinwheel.FadeInDisplayer())
-            .build()
-    }
-
-    class func displayImage(url: NSURL, imageView: UIImageView) {
-        Pinwheel.displayImage(url, imageView: imageView, options: Options.picture)
-    }
-
-    class func displayUserIcon(url: NSURL, imageView: UIImageView) {
-        Pinwheel.displayImage(url, imageView: imageView, options: Options.userIcon)
-    }
-
-    class func displayUserIconXS(url: NSURL, imageView: UIImageView) {
-        Pinwheel.displayImage(url, imageView: imageView, options: Options.userIconXS)
-    }
+    static let userIconXS = Pinwheel.DisplayOptions.Builder()
+        .addFilter(RoundedFilter(r: 2, w: 16, h: 16), hook: .BeforeMemory)
+        .displayer(Pinwheel.FadeInDisplayer())
+        .build()
 }
+
+// photo
+Pinwheel.displayImage(url, imageView: imageView, options: MyDisplayOptions.photo)
+
+// user icon
+Pinwheel.displayImage(url, imageView: imageView, options: MyDisplayOptions.userIcon)
+
+// small user icon
+Pinwheel.displayImage(url, imageView: imageView, options: MyDisplayOptions.userIconXS)
 ```
 
 

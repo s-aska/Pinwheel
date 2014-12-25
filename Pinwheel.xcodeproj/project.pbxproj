@@ -42,6 +42,7 @@
 		38E82B6A1A4076A800EFDC81 /* Pinwheel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pinwheel.swift; sourceTree = "<group>"; };
 		38E82B6C1A40773900EFDC81 /* PinwheelDisplayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinwheelDisplayer.swift; sourceTree = "<group>"; };
 		38E82B6E1A4087D600EFDC81 /* PinwheelProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinwheelProtocol.swift; sourceTree = "<group>"; };
+		38E82B891A42796300EFDC81 /* Pinwheel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Pinwheel.h; sourceTree = "<group>"; };
 		6A0A1CF31A40AFCD0035A03C /* PinwheelConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinwheelConfiguration.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -85,6 +86,7 @@
 		38E82B441A40747C00EFDC81 /* Pinwheel */ = {
 			isa = PBXGroup;
 			children = (
+				38E82B891A42796300EFDC81 /* Pinwheel.h */,
 				38E82B6A1A4076A800EFDC81 /* Pinwheel.swift */,
 				38E82B6E1A4087D600EFDC81 /* PinwheelProtocol.swift */,
 				6A0A1CF31A40AFCD0035A03C /* PinwheelConfiguration.swift */,
@@ -357,6 +359,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_INCLUDE_PATHS = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -374,6 +378,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_INCLUDE_PATHS = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 			};
 			name = Release;
 		};

@@ -35,8 +35,8 @@ public extension Pinwheel {
             var queuePriority: NSOperationQueuePriority?
             var timeoutIntervalForRequest: NSTimeInterval?
             var timeoutIntervalForResource: NSTimeInterval?
-            var diskCache: PinwheelDiskCacheProtocol? = Pinwheel.DiskCache()
-            var memoryCache: PinwheelMemoryCacheProtocol? = Pinwheel.MemoryCache()
+            var diskCache: PinwheelDiskCacheProtocol? = Pinwheel.DiskCache.sharedInstance()
+            var memoryCache: PinwheelMemoryCacheProtocol? = Pinwheel.MemoryCache.sharedInstance()
             var beforeDiskFilters = [PinwheelFilter]()
             var beforeMemoryFilters = [PinwheelFilter]()
             var displayer: PinwheelDisplayer = Pinwheel.SimpleDisplayer()
