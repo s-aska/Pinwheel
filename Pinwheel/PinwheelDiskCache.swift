@@ -41,7 +41,7 @@ public extension Pinwheel {
                 fileManager.createDirectoryAtPath(dir, withIntermediateDirectories: true, attributes: nil, error: nil)
             }
             
-            queue.addOperation(AsyncBlockOperation({ (op: AsyncBlockOperation) in
+            queue.addOperation(AsyncBlockOperation({ [unowned self] (op: AsyncBlockOperation) in
                 let fileManager = NSFileManager.defaultManager()
                 var error: NSError?
                 let keys = [NSURLContentModificationDateKey, NSURLTotalFileAllocatedSizeKey]
@@ -118,7 +118,7 @@ public extension Pinwheel {
                 return nil
             }
             
-            queue.addOperation(AsyncBlockOperation({ (op: AsyncBlockOperation) in
+            queue.addOperation(AsyncBlockOperation({ [unowned self] (op: AsyncBlockOperation) in
                 let now = NSDate()
                 let success = fileManager.setAttributes([NSFileModificationDate : now], ofItemAtPath: path, error: &error)
                 if !success {
@@ -144,7 +144,7 @@ public extension Pinwheel {
                 return
             }
             let newSize = self.size(path: path)
-            queue.addOperation(AsyncBlockOperation({ (op: AsyncBlockOperation) in
+            queue.addOperation(AsyncBlockOperation({ [unowned self] (op: AsyncBlockOperation) in
                 if let fileURL = NSURL(fileURLWithPath: path) {
                     self.fileURLs = self.fileURLs.filter { $0 != fileURL }
                     self.fileURLs.append(fileURL)
@@ -168,7 +168,7 @@ public extension Pinwheel {
                     Pinwheel.DLog("[error] disk cache removeItemAtPath:\(path) error:\(e.description)")
                     return
                 }
-                queue.addOperation(AsyncBlockOperation({ (op: AsyncBlockOperation) in
+                queue.addOperation(AsyncBlockOperation({ [unowned self] (op: AsyncBlockOperation) in
                     self.totalSize -= oldSize
                     self.fileURLs = self.fileURLs.filter { $0 != fileURL }
                     Pinwheel.DLog("[debug] \(key) disk cache remove success size:\(oldSize) => 0 total \(self.fileURLs.count) files \(self.totalSize) bytes")
@@ -178,7 +178,7 @@ public extension Pinwheel {
         }
         
         public func clear() {
-            queue.addOperation(AsyncBlockOperation({ (op: AsyncBlockOperation) in
+            queue.addOperation(AsyncBlockOperation({ [unowned self] (op: AsyncBlockOperation) in
                 let fileManager = NSFileManager.defaultManager()
                 self.fileURLs = self.fileURLs.filter({ (fileURL: NSURL) -> Bool in
                     if let path = fileURL.path {
