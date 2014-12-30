@@ -2,8 +2,8 @@
 //  PinwheelTests.swift
 //  PinwheelTests
 //
-//  Created by aska on 2014/12/16.
-//  Copyright (c) 2014年 aska. All rights reserved.
+//  Created by Shinichiro Aska on 12/15/16.
+//  Copyright (c) 2014 Shinichiro Aska. All rights reserved.
 //
 
 import UIKit
