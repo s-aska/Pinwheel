@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Shinichiro Aska. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 public extension Pinwheel {
     
@@ -19,6 +19,8 @@ public extension Pinwheel {
         public let beforeDiskFilters: [PinwheelFilter]
         public let beforeMemoryFilters: [PinwheelFilter]
         public let displayer: PinwheelDisplayer
+        public let prepare: ((UIImageView) -> Void)?
+        public let failure: ((UIImageView, FailureReason, NSError, NSURL) -> Void)?
         
         init (_ builder: Builder) {
             self.queuePriority = builder.queuePriority
@@ -29,6 +31,8 @@ public extension Pinwheel {
             self.beforeDiskFilters = builder.beforeDiskFilters
             self.beforeMemoryFilters = builder.beforeMemoryFilters
             self.displayer = builder.displayer
+            self.prepare = builder.prepare
+            self.failure = builder.failure
         }
         
         public class Builder {
@@ -40,6 +44,8 @@ public extension Pinwheel {
             var beforeDiskFilters = [PinwheelFilter]()
             var beforeMemoryFilters = [PinwheelFilter]()
             var displayer: PinwheelDisplayer = Pinwheel.SimpleDisplayer()
+            var prepare: ((UIImageView) -> Void)?
+            var failure: ((UIImageView, FailureReason, NSError, NSURL) -> Void)?
             
             public init () {
             }
@@ -81,6 +87,16 @@ public extension Pinwheel {
             
             public func displayer(displayer: PinwheelDisplayer) -> Builder {
                 self.displayer = displayer
+                return self
+            }
+            
+            public func prepare(prepare: ((UIImageView) -> Void)?) -> Builder {
+                self.prepare = prepare
+                return self
+            }
+            
+            public func failure(failure: ((UIImageView, FailureReason, NSError, NSURL) -> Void)?) -> Builder {
+                self.failure = failure
                 return self
             }
             

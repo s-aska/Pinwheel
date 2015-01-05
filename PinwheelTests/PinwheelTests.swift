@@ -41,7 +41,23 @@ class PinwheelTests: XCTestCase {
             .queuePriority(NSOperationQueuePriority.VeryLow)
             .timeoutIntervalForRequest(8)
             .timeoutIntervalForResource(9)
+            .prepare { (image) -> Void in
+                
+            }
+            .failure { (image, reason, error, url) -> Void in
+                switch reason {
+                case .EmptyUri:
+                    NSLog("EmptyUri \(error)")
+                case .InvalidData:
+                    NSLog("InvalidData \(error) \(url)")
+                case .NetworkError:
+                    NSLog("NetworkError \(error) \(url)")
+                }
+            }
             .build()
+        
+        Pinwheel.displayImage(NSURL(), imageView: UIImageView(), options: options)
+        Pinwheel.displayImage(NSURL(string: "http://example.com/")!, imageView: UIImageView(), options: options)
         
         XCTAssertEqual(options.queuePriority!, NSOperationQueuePriority.VeryLow)
         XCTAssertEqual(options.timeoutIntervalForRequest!, 8)
