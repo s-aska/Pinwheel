@@ -70,18 +70,18 @@ struct MyDisplayOptions {
     static let photo = Pinwheel.DisplayOptions.Builder()
         .displayer(Pinwheel.FadeInDisplayer())
         .queuePriority(NSOperationQueuePriority.Low)
-        .prepare { (image) -> Void in
+        .prepare { (imageView) -> Void in
             // run only at the time of download
-            // eg. set place holder
+            imageView.image = UIImage(named: "Loading")
         }
-        .failure { (image, reason, error, url) -> Void in
+        .failure { (imageView, reason, error, requestURL) -> Void in
             switch reason {
             case .EmptyUri:
-                NSLog("EmptyUri \(error)")
+                imageView.image = UIImage(named: "Empty")
             case .InvalidData:
-                NSLog("InvalidData \(error) \(url)")
+                imageView.image = UIImage(named: "Broken")
             case .NetworkError:
-                NSLog("NetworkError \(error) \(url)")
+                imageView.image = UIImage(named: "Cancel")
             }
         }
         .build()

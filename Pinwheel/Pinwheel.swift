@@ -104,12 +104,16 @@ public class Pinwheel {
                     } else {
                         options.diskCache?.remove(request.diskCaheKey)
                         if let failure = options.failure {
-                            failure(imageView, .InvalidData, self.error("invalid data from disk cache key:\(request.diskCaheKey)."), url)
+                            dispatch_async(dispatch_get_main_queue(), {
+                                failure(imageView, .InvalidData, self.error("invalid data from disk cache key:\(request.diskCaheKey)."), url)
+                            })
                         }
                     }
                 } else {
                     if let prepare = options.prepare {
-                        prepare(imageView)
+                        dispatch_async(dispatch_get_main_queue(), {
+                            prepare(imageView)
+                        })
                     }
                     dispatch_sync(Static.serial) {
                         let queuePriority = options.queuePriority ?? Static.config.defaultQueuePriority
@@ -129,7 +133,9 @@ public class Pinwheel {
                 }
             })
         } else if let failure = options.failure {
-            failure(imageView, .EmptyUri, self.error("empty url."), url)
+            dispatch_async(dispatch_get_main_queue(), {
+                failure(imageView, .EmptyUri, self.error("empty url."), url)
+            })
         }
     }
     
@@ -250,7 +256,9 @@ public class Pinwheel {
             if Static.imageViewState[request.imageView.hashValue] == request.downloadKey {
                 Static.imageViewState.removeValueForKey(request.imageView.hashValue)
                 if let failure = request.options.failure {
-                    failure(request.imageView, reason, error, request.url)
+                    dispatch_async(dispatch_get_main_queue(), {
+                        failure(request.imageView, reason, error, request.url)
+                    })
                 }
             }
             
@@ -259,7 +267,9 @@ public class Pinwheel {
                     if Static.imageViewState[stack.imageView.hashValue] == request.downloadKey {
                         Static.imageViewState.removeValueForKey(stack.imageView.hashValue)
                         if let failure = stack.options.failure {
-                            failure(stack.imageView, reason, error, stack.url)
+                            dispatch_async(dispatch_get_main_queue(), {
+                                failure(stack.imageView, reason, error, stack.url)
+                            })
                         }
                     }
                 }
