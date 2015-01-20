@@ -36,6 +36,12 @@ public class Pinwheel {
         private static let queue = NSOperationQueue()
         private static var requests = [String: [Request]]()
         private static var config = Configuration.Builder().build()
+        private static let displayQueue = NSOperationQueue()
+    }
+    
+    public class var suspend: Bool {
+        get { return Static.displayQueue.suspended }
+        set { Static.displayQueue.suspended = newValue }
     }
     
     // MARK: - Request
@@ -58,10 +64,19 @@ public class Pinwheel {
         }
         
         func display(image: UIImage, loadedFrom: LoadedFrom) {
-            dispatch_async(dispatch_get_main_queue(), {
-                self.options.displayer.display(image, imageView: self.imageView, loadedFrom: loadedFrom)
-                Pinwheel.DLog("[debug] \(self.downloadKey) display hashValue:\(self.imageView.hashValue)")
-            })
+            Static.displayQueue.addOperation(AsyncBlockOperation({ op in
+                dispatch_sync(Static.serial) {
+                    if Static.imageViewState.removeValueForKey(self.imageView.hashValue) == self.downloadKey {
+                        dispatch_async(dispatch_get_main_queue(), {
+                            self.options.displayer.display(image, imageView: self.imageView, loadedFrom: loadedFrom)
+                            op.finish()
+                            Pinwheel.DLog("[debug] \(self.downloadKey) display hashValue:\(self.imageView.hashValue)")
+                        })
+                    } else {
+                        op.finish()
+                    }
+                }
+            }))
         }
     }
     
@@ -70,6 +85,7 @@ public class Pinwheel {
     public class func setup(config: Configuration) {
         Static.config = config
         Static.queue.maxConcurrentOperationCount = config.maxConcurrent
+        Static.displayQueue.maxConcurrentOperationCount = config.maxConcurrent
     }
     
     public class func displayImage(url: NSURL, imageView: UIImageView) {
@@ -204,7 +220,6 @@ public class Pinwheel {
             
             if Static.imageViewState[request.imageView.hashValue] == request.downloadKey {
                 request.display(image, loadedFrom: loadedFrom)
-                Static.imageViewState.removeValueForKey(request.imageView.hashValue)
                 displayViews++
             }
             
@@ -218,7 +233,6 @@ public class Pinwheel {
                 for stack in stacks {
                     if stack.memoryCaheKey == request.memoryCaheKey {
                         stack.display(image, loadedFrom: loadedFrom)
-                        Static.imageViewState.removeValueForKey(stack.imageView.hashValue)
                         displayViews++
                     } else if stackGroup[stack.memoryCaheKey] != nil {
                         stackGroup[stack.memoryCaheKey]?.append(stack)
@@ -240,7 +254,6 @@ public class Pinwheel {
                                 isFirst = false
                             }
                             stackInGroup.display(image, loadedFrom: loadedFrom)
-                            Static.imageViewState.removeValueForKey(stackInGroup.imageView.hashValue)
                             displayViews++
                         }
                     }
@@ -313,21 +326,25 @@ public class Pinwheel {
         
         func URLSession(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, didFinishDownloadingToURL location: NSURL) {
             if let data = NSData(contentsOfURL: location) {
-                
-                // Check UIImage compatible
-                if var image = Pinwheel.filterAndSaveDisk(request, data: data) {
-                    Pinwheel.onSuccess(request, image: image, loadedFrom: .Network)
-                } else {
-                    Pinwheel.onFailure(request, reason: .InvalidData, error: Pinwheel.error("invalid data from network can't convert UIImage."))
-                    Pinwheel.DLog("[error] \(request.downloadKey) download failure:Can't convert UIImage")
-                }
-                operation?.finish()
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), {
+                    // Check UIImage compatible
+                    if var image = Pinwheel.filterAndSaveDisk(self.request, data: data) {
+                        Pinwheel.onSuccess(self.request, image: image, loadedFrom: .Network)
+                    } else {
+                        Pinwheel.onFailure(self.request, reason: .InvalidData, error: Pinwheel.error("invalid data from network can't convert UIImage."))
+                        Pinwheel.DLog("[error] \(self.request.downloadKey) download failure:Can't convert UIImage")
+                    }
+                    self.operation?.finish()
+                    self.operation = nil
+                })
             } else {
-                Pinwheel.onFailure(request, reason: .InvalidData, error: Pinwheel.error("invalid data from network can't convert NSData."))
-                Pinwheel.DLog("[error] \(request.downloadKey) download failure:Can't convert NSData")
-                operation?.cancel()
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), {
+                    Pinwheel.onFailure(self.request, reason: .InvalidData, error: Pinwheel.error("invalid data from network can't convert NSData."))
+                    Pinwheel.DLog("[error] \(self.request.downloadKey) download failure:Can't convert NSData")
+                    self.operation?.cancel()
+                    self.operation = nil
+                })
             }
-            operation = nil
         }
         
         func URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError error: NSError?) {

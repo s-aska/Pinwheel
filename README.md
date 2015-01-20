@@ -9,7 +9,7 @@ Pinwheel is an Image Loading library written in Swift
 ## Features
 
 - [ ] Comprehensive Unit Test Coverage
-- [ ] Carthage support
+- [x] Carthage support
 - [x] Priority control in accordance with the visibility
 - [x] Combine HTTP Request to the same URL
 - [x] Memory Cache
@@ -105,8 +105,22 @@ Pinwheel.displayImage(url, imageView: imageView, options: MyDisplayOptions.userI
 
 // small user icon
 Pinwheel.displayImage(url, imageView: imageView, options: MyDisplayOptions.userIconXS)
+
+
 ```
 
+### Suspend display queue
+
+```swift
+func scrollToTop() {
+    Pinwheel.suspend = true
+    self.tableView.setContentOffset(CGPointZero, animated: true)
+}
+
+func scrollEnd() {
+    Pinwheel.suspend = false
+}
+```
 
 ## License
 
