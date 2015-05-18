@@ -95,7 +95,7 @@ public extension Pinwheel {
         // MARK: - Public Methods
         
         private class func defaultDir() -> String {
-            let cachesPath = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.CachesDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as String
+            let cachesPath = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.CachesDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as! String
             return cachesPath.stringByAppendingPathComponent("Pinwheel.DiskCache")
         }
         
@@ -263,55 +263,7 @@ public extension Pinwheel {
 // This is the original copyright notice:
 private extension Pinwheel {
     
-    /** array of bytes, little-endian representation */
-    class func arrayOfBytes<T>(value:T, length:Int? = nil) -> [Byte] {
-        let totalBytes = length ?? (sizeofValue(value) * 8)
-        var v = value
-        
-        var valuePointer = UnsafeMutablePointer<T>.alloc(1)
-        valuePointer.memory = value
-        
-        var bytesPointer = UnsafeMutablePointer<Byte>(valuePointer)
-        var bytes = [Byte](count: totalBytes, repeatedValue: 0)
-        for j in 0..<min(sizeof(T),totalBytes) {
-            bytes[totalBytes - 1 - j] = (bytesPointer + j).memory
-        }
-        
-        valuePointer.destroy()
-        valuePointer.dealloc(1)
-        
-        return bytes
-    }
-    
-    class HashBase {
-        
-        var message: NSData
-        
-        init(_ message: NSData) {
-            self.message = message
-        }
-        
-        /** Common part for hash calculation. Prepare header data. */
-        func prepare(_ len:Int = 64) -> NSMutableData {
-            var tmpMessage: NSMutableData = NSMutableData(data: self.message)
-            
-            // Step 1. Append Padding Bits
-            tmpMessage.appendBytes([0x80]) // append one bit (Byte with one bit) to message
-            
-            // append "0" bit until message length in bits ≡ 448 (mod 512)
-            while tmpMessage.length % len != (len - 8) {
-                tmpMessage.appendBytes([0x00])
-            }
-            
-            return tmpMessage
-        }
-    }
-    
-    class func rotateLeft(v:UInt32, n:UInt32) -> UInt32 {
-        return ((v << n) & 0xFFFFFFFF) | (v >> (32 - n))
-    }
-    
-    class MD5: HashBase {
+    class MD5 : HashBase {
         
         /** specifies the per-round shift amounts */
         private let s: [UInt32] = [7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,
@@ -347,20 +299,20 @@ private extension Pinwheel {
             
             // Step 2. Append Length a 64-bit representation of lengthInBits
             var lengthInBits = (message.length * 8)
-            var lengthBytes = lengthInBits.bytes(totalBytes: 64 / 8)
-            tmpMessage.appendBytes(reverse(lengthBytes));
+            var lengthBytes = lengthInBits.bytes(64 / 8)
+            tmpMessage.appendBytes(reverse(lengthBytes))
             
             // Process the message in successive 512-bit chunks:
             let chunkSizeBytes = 512 / 8 // 64
             var leftMessageBytes = tmpMessage.length
-            for var i = 0; i < tmpMessage.length; i = i + chunkSizeBytes, leftMessageBytes -= chunkSizeBytes {
+            for (var i = 0; i < tmpMessage.length; i = i + chunkSizeBytes, leftMessageBytes -= chunkSizeBytes) {
                 let chunk = tmpMessage.subdataWithRange(NSRange(location: i, length: min(chunkSizeBytes,leftMessageBytes)))
+                let bytes = tmpMessage.bytes
                 
                 // break chunk into sixteen 32-bit words M[j], 0 ≤ j ≤ 15
                 var M:[UInt32] = [UInt32](count: 16, repeatedValue: 0)
-                for x in 0..<M.count {
-                    chunk.getBytes(&M[x], range:NSRange(location:x * sizeofValue(M[x]), length: sizeofValue(M[x])));
-                }
+                let range = NSRange(location:0, length: M.count * sizeof(UInt32))
+                chunk.getBytes(UnsafeMutablePointer<Void>(M), range: range)
                 
                 // Initialize hash value for this chunk:
                 var A:UInt32 = hh[0]
@@ -398,7 +350,7 @@ private extension Pinwheel {
                     dTemp = D
                     D = C
                     C = B
-                    B = B &+ Pinwheel.rotateLeft((A &+ F &+ k[j] &+ M[g]), n: s[j])
+                    B = B &+ rotateLeft((A &+ F &+ k[j] &+ M[g]), s[j])
                     A = dTemp
                 }
                 
@@ -408,13 +360,13 @@ private extension Pinwheel {
                 hh[3] = hh[3] &+ D
             }
             
-            var buf: NSMutableData = NSMutableData();
+            var buf: NSMutableData = NSMutableData()
             hh.map({ (item) -> () in
                 var i:UInt32 = item.littleEndian
                 buf.appendBytes(&i, length: sizeofValue(i))
             })
             
-            return buf.copy() as NSData;
+            return buf.copy() as! NSData
         }
     }
 }
@@ -430,7 +382,7 @@ private extension String {
             for c in resultEnumerator {
                 MD5String.appendFormat("%02x", c)
             }
-            return MD5String
+            return MD5String as String
         } else {
             return self
         }
@@ -439,7 +391,7 @@ private extension String {
     func MD5Filename() -> String {
         let MD5String = self.MD5String()
         let pathExtension = self.pathExtension
-        if countElements(pathExtension) > 0 {
+        if count(pathExtension) > 0 {
             return MD5String.stringByAppendingPathExtension(pathExtension) ?? MD5String
         } else {
             return MD5String
@@ -447,16 +399,72 @@ private extension String {
     }
 }
 
-private extension Int {
+/** array of bytes, little-endian representation */
+func arrayOfBytes<T>(value:T, length:Int? = nil) -> [UInt8] {
+    let totalBytes = length ?? (sizeofValue(value) * 8)
+    var v = value
+    
+    var valuePointer = UnsafeMutablePointer<T>.alloc(1)
+    valuePointer.memory = value
+    
+    var bytesPointer = UnsafeMutablePointer<UInt8>(valuePointer)
+    var bytes = [UInt8](count: totalBytes, repeatedValue: 0)
+    for j in 0..<min(sizeof(T),totalBytes) {
+        bytes[totalBytes - 1 - j] = (bytesPointer + j).memory
+    }
+    
+    valuePointer.destroy()
+    valuePointer.dealloc(1)
+    
+    return bytes
+}
+
+extension Int {
     /** Array of bytes with optional padding (little-endian) */
-    func bytes(totalBytes: Int = sizeof(Int)) -> [Byte] {
-        return Pinwheel.arrayOfBytes(self, length: totalBytes)
+    public func bytes(_ totalBytes: Int = sizeof(Int)) -> [UInt8] {
+        return arrayOfBytes(self, length: totalBytes)
+    }
+    
+}
+
+extension NSMutableData {
+    
+    /** Convenient way to append bytes */
+    internal func appendBytes(arrayOfBytes: [UInt8]) {
+        self.appendBytes(arrayOfBytes, length: arrayOfBytes.count)
+    }
+    
+}
+
+class HashBase {
+    
+    var message: NSData
+    
+    init(_ message: NSData) {
+        self.message = message
+    }
+    
+    /** Common part for hash calculation. Prepare header data. */
+    func prepare(_ len:Int = 64) -> NSMutableData {
+        var tmpMessage: NSMutableData = NSMutableData(data: self.message)
+        
+        // Step 1. Append Padding Bits
+        tmpMessage.appendBytes([0x80]) // append one bit (UInt8 with one bit) to message
+        
+        // append "0" bit until message length in bits ≡ 448 (mod 512)
+        var msgLength = tmpMessage.length
+        var counter = 0
+        while msgLength % len != (len - 8) {
+            counter++
+            msgLength++
+        }
+        var bufZeros = UnsafeMutablePointer<UInt8>(calloc(counter, sizeof(UInt8)))
+        tmpMessage.appendBytes(bufZeros, length: counter)
+        
+        return tmpMessage
     }
 }
 
-private extension NSMutableData {
-    /** Convenient way to append bytes */
-    func appendBytes(arrayOfBytes: [Byte]) {
-        self.appendBytes(arrayOfBytes, length: arrayOfBytes.count)
-    }
+func rotateLeft(v:UInt32, n:UInt32) -> UInt32 {
+    return ((v << n) & 0xFFFFFFFF) | (v >> (32 - n))
 }
