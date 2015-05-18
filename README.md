@@ -1,6 +1,6 @@
 ![Pinwheel](http://aska.pw/img/pinwheel.svg?2014-12-18)
 
-[![Build Status](https://travis-ci.org/s-aska/Pinwheel.svg)](https://travis-ci.org/s-aska/Pinwheel)
+[![Circle CI](https://circleci.com/gh/s-aska/Pinwheel.svg?style=svg)](https://circleci.com/gh/s-aska/Pinwheel)
 
 Pinwheel is an Image Loading library written in Swift
 
