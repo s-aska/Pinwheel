@@ -159,7 +159,7 @@ public class Pinwheel {
     
     class func updateQueuePriorityByName(name: String, queuePriority: NSOperationQueuePriority) -> Int {
         var count = 0
-        for operation in Static.queue.operations as [Pinwheel.DownloadOperation] {
+        for operation in Static.queue.operations as! [Pinwheel.DownloadOperation] {
             if operation.name == name && operation.queuePriority != queuePriority {
                 operation.queuePriority = queuePriority
                 count++
