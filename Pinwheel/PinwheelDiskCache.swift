@@ -34,27 +34,37 @@ public extension Pinwheel {
         private init (dir: String) {
             self.queue.maxConcurrentOperationCount = 1
             self.dir = dir
-            self.dirURL = NSURL(fileURLWithPath: self.dir)!
+            self.dirURL = NSURL(fileURLWithPath: self.dir)
             
             let fileManager = NSFileManager.defaultManager()
             if !fileManager.fileExistsAtPath(dir) {
-                fileManager.createDirectoryAtPath(dir, withIntermediateDirectories: true, attributes: nil, error: nil)
+                do {
+                    try fileManager.createDirectoryAtPath(dir, withIntermediateDirectories: true, attributes: nil)
+                } catch {
+                }
             }
             
             queue.addOperation(AsyncBlockOperation({ [unowned self] (op: AsyncBlockOperation) in
-                let fileManager = NSFileManager.defaultManager()
-                var error: NSError?
-                let keys = [NSURLContentModificationDateKey, NSURLTotalFileAllocatedSizeKey]
-                let options = NSDirectoryEnumerationOptions.allZeros
-                if let fileURLs = fileManager.contentsOfDirectoryAtURL(self.dirURL, includingPropertiesForKeys: keys, options: options, error: &error) as? [NSURL] {
-                    
-                    let sortedFileURLs = fileURLs.sorted({(URL1 : NSURL, URL2 : NSURL) -> Bool in
+                do {
+                    let fileManager = NSFileManager.defaultManager()
+                    let keys = [NSURLContentModificationDateKey, NSURLTotalFileAllocatedSizeKey]
+                    let options = NSDirectoryEnumerationOptions()
+                    let fileURLs = try fileManager.contentsOfDirectoryAtURL(self.dirURL, includingPropertiesForKeys: keys, options: options)
+                    let sortedFileURLs = fileURLs.sort({(URL1 : NSURL, URL2 : NSURL) -> Bool in
                         
                         var value1: AnyObject?
-                        if !URL1.getResourceValue(&value1, forKey: NSURLContentModificationDateKey, error: nil) { return true }
+                        do {
+                            try URL1.getResourceValue(&value1, forKey: NSURLContentModificationDateKey)
+                        } catch {
+                            return true
+                        }
                         
                         var value2: AnyObject?
-                        if !URL2.getResourceValue(&value2, forKey: NSURLContentModificationDateKey, error: nil) { return false }
+                        do {
+                            try URL2.getResourceValue(&value2, forKey: NSURLContentModificationDateKey)
+                        } catch {
+                            return false
+                        }
                         
                         if let string1 = value1 as? String {
                             if let string2 = value2 as? String {
@@ -82,11 +92,9 @@ public extension Pinwheel {
                     for fileURL in sortedFileURLs {
                         self.totalSize += self.size(url: fileURL)
                     }
-                    
-                    Pinwheel.DLog("[debug] disk cache init disk usage total \(self.fileURLs.count) files \(self.totalSize) bytes")
-                } else {
-                    Pinwheel.DLog("[error] disk cache contentsOfDirectoryAtURL:\(self.dirURL) error:\(error?.description)")
+                } catch {
                 }
+                Pinwheel.DLog("[debug] disk cache init disk usage total \(self.fileURLs.count) files \(self.totalSize) bytes")
                 self.diet()
                 op.finish()
             }))
@@ -95,7 +103,7 @@ public extension Pinwheel {
         // MARK: - Public Methods
         
         private class func defaultDir() -> String {
-            let cachesPath = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.CachesDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as! String
+            let cachesPath = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.CachesDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as String
             return cachesPath.stringByAppendingPathComponent("Pinwheel.DiskCache")
         }
         
@@ -111,23 +119,26 @@ public extension Pinwheel {
                 return nil
             }
             
-            var error: NSError?
-            let data = NSData(contentsOfFile: path, options: nil, error: &error)
-            if let e = error {
-                Pinwheel.DLog("[error] \(key) disk cache read error:\(e.debugDescription)")
+            let data: NSData?
+            do {
+                data = try NSData(contentsOfFile: path, options: [])
+            } catch let error as NSError {
+                Pinwheel.DLog("[error] \(key) disk cache read error:\(error.debugDescription)")
                 return nil
             }
             
             queue.addOperation(AsyncBlockOperation({ [unowned self] (op: AsyncBlockOperation) in
                 let now = NSDate()
-                let success = fileManager.setAttributes([NSFileModificationDate : now], ofItemAtPath: path, error: &error)
-                if !success {
-                    Pinwheel.DLog("[error] \(key) disk cache setAttributes error:\(error?.debugDescription)")
+                do {
+                    try fileManager.setAttributes([NSFileModificationDate : now], ofItemAtPath: path)
+                } catch let error as NSError {
+                    Pinwheel.DLog("[error] \(key) disk cache setAttributes error:\(error.debugDescription)")
+                } catch {
+                    fatalError()
                 }
-                if let fileURL = NSURL(fileURLWithPath: path) {
-                    self.fileURLs = self.fileURLs.filter { $0 != fileURL }
-                    self.fileURLs.append(fileURL)
-                }
+                let fileURL = NSURL(fileURLWithPath: path)
+                self.fileURLs = self.fileURLs.filter { $0 != fileURL }
+                self.fileURLs.append(fileURL)
                 op.finish()
             }))
             
@@ -137,18 +148,17 @@ public extension Pinwheel {
         public func set(key: String, data: NSData) {
             let path = pathForKey(key)
             let oldSize = self.size(path: path)
-            var error: NSError?
-            let success = data.writeToFile(path, options: NSDataWritingOptions.AtomicWrite, error: &error)
-            if !success {
-                Pinwheel.DLog("[error] \(key) disk cache write error:\(error?.debugDescription)")
+            do {
+                try data.writeToFile(path, options: NSDataWritingOptions.AtomicWrite)
+            } catch let error as NSError {
+                Pinwheel.DLog("[error] \(key) disk cache write error:\(error.debugDescription)")
                 return
             }
             let newSize = self.size(path: path)
             queue.addOperation(AsyncBlockOperation({ [unowned self] (op: AsyncBlockOperation) in
-                if let fileURL = NSURL(fileURLWithPath: path) {
-                    self.fileURLs = self.fileURLs.filter { $0 != fileURL }
-                    self.fileURLs.append(fileURL)
-                }
+                let fileURL = NSURL(fileURLWithPath: path)
+                self.fileURLs = self.fileURLs.filter { $0 != fileURL }
+                self.fileURLs.append(fileURL)
                 self.totalSize -= oldSize
                 self.totalSize += newSize
                 Pinwheel.DLog("[debug] \(key) disk cache write success size:\(oldSize) => \(newSize) total \(self.fileURLs.count) files \(self.totalSize) bytes")
@@ -159,22 +169,21 @@ public extension Pinwheel {
         
         public func remove(key: String) {
             let path = pathForKey(key)
-            if let fileURL = NSURL(fileURLWithPath: path) {
-                let oldSize = self.size(url: fileURL)
-                var error: NSError?
-                let fileManager = NSFileManager.defaultManager()
-                fileManager.removeItemAtPath(path, error: &error)
-                if let e = error {
-                    Pinwheel.DLog("[error] disk cache removeItemAtPath:\(path) error:\(e.description)")
-                    return
-                }
-                queue.addOperation(AsyncBlockOperation({ [unowned self] (op: AsyncBlockOperation) in
-                    self.totalSize -= oldSize
-                    self.fileURLs = self.fileURLs.filter { $0 != fileURL }
-                    Pinwheel.DLog("[debug] \(key) disk cache remove success size:\(oldSize) => 0 total \(self.fileURLs.count) files \(self.totalSize) bytes")
-                    op.finish()
-                }))
+            let fileURL = NSURL(fileURLWithPath: path)
+            let oldSize = self.size(url: fileURL)
+            let fileManager = NSFileManager.defaultManager()
+            do {
+                try fileManager.removeItemAtPath(path)
+            } catch let error as NSError {
+                Pinwheel.DLog("[error] disk cache removeItemAtPath:\(path) error:\(error.description)")
+                return
             }
+            queue.addOperation(AsyncBlockOperation({ [unowned self] (op: AsyncBlockOperation) in
+                self.totalSize -= oldSize
+                self.fileURLs = self.fileURLs.filter { $0 != fileURL }
+                Pinwheel.DLog("[debug] \(key) disk cache remove success size:\(oldSize) => 0 total \(self.fileURLs.count) files \(self.totalSize) bytes")
+                op.finish()
+                }))
         }
         
         public func clear() {
@@ -183,13 +192,14 @@ public extension Pinwheel {
                 self.fileURLs = self.fileURLs.filter({ (fileURL: NSURL) -> Bool in
                     if let path = fileURL.path {
                         let oldSize = self.size(url: fileURL)
-                        var error: NSError?
-                        fileManager.removeItemAtPath(path, error: &error)
-                        if let e = error {
-                            Pinwheel.DLog("[error] disk cache removeItemAtPath:\(path) error:\(e.description)")
-                        } else {
+                        do {
+                            try fileManager.removeItemAtPath(path)
                             self.totalSize -= oldSize
                             return false
+                        } catch let error as NSError {
+                            Pinwheel.DLog("[error] disk cache removeItemAtPath:\(path) error:\(error.description)")
+                        } catch {
+                            fatalError()
                         }
                     }
                     return true
@@ -214,13 +224,14 @@ public extension Pinwheel {
                 if self.cacheSize < self.totalSize {
                     if let path = fileURL.path {
                         let oldSize = self.size(url: fileURL)
-                        var error: NSError?
-                        fileManager.removeItemAtPath(path, error: &error)
-                        if let e = error {
-                            Pinwheel.DLog("[error] disk cache removeItemAtPath:\(path) error:\(e.description)")
-                        } else {
+                        do {
+                            try fileManager.removeItemAtPath(path)
                             self.totalSize -= oldSize
                             return false
+                        } catch let error as NSError {
+                            Pinwheel.DLog("[error] disk cache removeItemAtPath:\(path) error:\(error.description)")
+                        } catch {
+                            fatalError()
                         }
                     }
                 }
@@ -236,9 +247,12 @@ public extension Pinwheel {
         
         // MARK: - Private Methods
         
-        private func size(#url: NSURL) -> UInt64 {
+        private func size(url url: NSURL) -> UInt64 {
             var value: AnyObject?
-            url.getResourceValue(&value, forKey: NSURLTotalFileAllocatedSizeKey, error: nil)
+            do {
+                try url.getResourceValue(&value, forKey: NSURLTotalFileAllocatedSizeKey)
+            } catch {
+            }
             if let number = value as? NSNumber {
                 return UInt64(number.longLongValue)
             } else {
@@ -246,12 +260,8 @@ public extension Pinwheel {
             }
         }
         
-        private func size(#path: String) -> UInt64 {
-            if let url = NSURL(fileURLWithPath: path) {
-                return self.size(url: url)
-            } else {
-                return 0
-            }
+        private func size(path path: String) -> UInt64 {
+            return self.size(url: NSURL(fileURLWithPath: path))
         }
     }
 }
@@ -292,22 +302,21 @@ private extension Pinwheel {
         private let h:[UInt32] = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476]
         
         func calculate() -> NSData {
-            var tmpMessage = prepare()
+            let tmpMessage = prepare()
             
             // hash values
             var hh = h
             
             // Step 2. Append Length a 64-bit representation of lengthInBits
-            var lengthInBits = (message.length * 8)
-            var lengthBytes = lengthInBits.bytes(64 / 8)
-            tmpMessage.appendBytes(reverse(lengthBytes))
+            let lengthInBits = (message.length * 8)
+            let lengthBytes = lengthInBits.bytes(64 / 8)
+            tmpMessage.appendBytes(Array(lengthBytes.reverse()))
             
             // Process the message in successive 512-bit chunks:
             let chunkSizeBytes = 512 / 8 // 64
             var leftMessageBytes = tmpMessage.length
             for (var i = 0; i < tmpMessage.length; i = i + chunkSizeBytes, leftMessageBytes -= chunkSizeBytes) {
                 let chunk = tmpMessage.subdataWithRange(NSRange(location: i, length: min(chunkSizeBytes,leftMessageBytes)))
-                let bytes = tmpMessage.bytes
                 
                 // break chunk into sixteen 32-bit words M[j], 0 ≤ j ≤ 15
                 var M:[UInt32] = [UInt32](count: 16, repeatedValue: 0)
@@ -350,7 +359,7 @@ private extension Pinwheel {
                     dTemp = D
                     D = C
                     C = B
-                    B = B &+ rotateLeft((A &+ F &+ k[j] &+ M[g]), s[j])
+                    B = B &+ rotateLeft((A &+ F &+ k[j] &+ M[g]), n: s[j])
                     A = dTemp
                 }
                 
@@ -360,7 +369,7 @@ private extension Pinwheel {
                 hh[3] = hh[3] &+ D
             }
             
-            var buf: NSMutableData = NSMutableData()
+            let buf: NSMutableData = NSMutableData()
             hh.map({ (item) -> () in
                 var i:UInt32 = item.littleEndian
                 buf.appendBytes(&i, length: sizeofValue(i))
@@ -391,7 +400,7 @@ private extension String {
     func MD5Filename() -> String {
         let MD5String = self.MD5String()
         let pathExtension = self.pathExtension
-        if count(pathExtension) > 0 {
+        if pathExtension.characters.count > 0 {
             return MD5String.stringByAppendingPathExtension(pathExtension) ?? MD5String
         } else {
             return MD5String
@@ -402,12 +411,11 @@ private extension String {
 /** array of bytes, little-endian representation */
 func arrayOfBytes<T>(value:T, length:Int? = nil) -> [UInt8] {
     let totalBytes = length ?? (sizeofValue(value) * 8)
-    var v = value
     
-    var valuePointer = UnsafeMutablePointer<T>.alloc(1)
+    let valuePointer = UnsafeMutablePointer<T>.alloc(1)
     valuePointer.memory = value
     
-    var bytesPointer = UnsafeMutablePointer<UInt8>(valuePointer)
+    let bytesPointer = UnsafeMutablePointer<UInt8>(valuePointer)
     var bytes = [UInt8](count: totalBytes, repeatedValue: 0)
     for j in 0..<min(sizeof(T),totalBytes) {
         bytes[totalBytes - 1 - j] = (bytesPointer + j).memory
@@ -421,7 +429,7 @@ func arrayOfBytes<T>(value:T, length:Int? = nil) -> [UInt8] {
 
 extension Int {
     /** Array of bytes with optional padding (little-endian) */
-    public func bytes(_ totalBytes: Int = sizeof(Int)) -> [UInt8] {
+    public func bytes(totalBytes: Int = sizeof(Int)) -> [UInt8] {
         return arrayOfBytes(self, length: totalBytes)
     }
     
@@ -445,8 +453,8 @@ class HashBase {
     }
     
     /** Common part for hash calculation. Prepare header data. */
-    func prepare(_ len:Int = 64) -> NSMutableData {
-        var tmpMessage: NSMutableData = NSMutableData(data: self.message)
+    func prepare(len:Int = 64) -> NSMutableData {
+        let tmpMessage: NSMutableData = NSMutableData(data: self.message)
         
         // Step 1. Append Padding Bits
         tmpMessage.appendBytes([0x80]) // append one bit (UInt8 with one bit) to message
@@ -458,7 +466,7 @@ class HashBase {
             counter++
             msgLength++
         }
-        var bufZeros = UnsafeMutablePointer<UInt8>(calloc(counter, sizeof(UInt8)))
+        let bufZeros = UnsafeMutablePointer<UInt8>(calloc(counter, sizeof(UInt8)))
         tmpMessage.appendBytes(bufZeros, length: counter)
         
         return tmpMessage

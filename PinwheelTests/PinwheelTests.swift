@@ -23,7 +23,7 @@ class PinwheelTests: XCTestCase {
     }
     
     func testConfiguration() {
-        var config = Pinwheel.Configuration.Builder()
+        let config = Pinwheel.Configuration.Builder()
             .maxConcurrent(6)
             .defaultQueuePriority(NSOperationQueuePriority.VeryHigh)
             .defaultTimeoutIntervalForRequest(8)
@@ -37,7 +37,7 @@ class PinwheelTests: XCTestCase {
     }
     
     func testDisplayOptions() {
-        var options = Pinwheel.DisplayOptions.Builder()
+        let options = Pinwheel.DisplayOptions.Builder()
             .queuePriority(NSOperationQueuePriority.VeryLow)
             .timeoutIntervalForRequest(8)
             .timeoutIntervalForResource(9)
@@ -49,9 +49,9 @@ class PinwheelTests: XCTestCase {
                 case .EmptyUri:
                     NSLog("EmptyUri \(error)")
                 case .InvalidData:
-                    NSLog("InvalidData \(error) \(url)")
+                    NSLog("InvalidData \(error) \(url ?? false)")
                 case .NetworkError:
-                    NSLog("NetworkError \(error) \(url)")
+                    NSLog("NetworkError \(error) \(url ?? false)")
                 }
             }
             .build()
