@@ -316,7 +316,7 @@ public class Pinwheel {
             
             let session = NSURLSession(configuration: config, delegate: self, delegateQueue: nil)
             
-            operation = DownloadOperation(task: session.downloadTaskWithURL(request.url)!, name: request.downloadKey)
+            operation = DownloadOperation(task: session.downloadTaskWithURL(request.url), name: request.downloadKey)
         }
         
         func URLSession(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, didFinishDownloadingToURL location: NSURL) {

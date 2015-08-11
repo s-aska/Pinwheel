@@ -103,7 +103,7 @@ public extension Pinwheel {
         // MARK: - Public Methods
         
         private class func defaultDir() -> String {
-            let cachesPath = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.CachesDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as String
+            let cachesPath = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.CachesDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0] as NSString
             return cachesPath.stringByAppendingPathComponent("Pinwheel.DiskCache")
         }
         
@@ -211,7 +211,7 @@ public extension Pinwheel {
         
         public func pathForKey(key: String) -> String {
             let filename = key.MD5Filename()
-            return dir.stringByAppendingPathComponent(filename)
+            return NSString(string: dir).stringByAppendingPathComponent(filename)
         }
         
         public func diet() {
@@ -399,9 +399,9 @@ private extension String {
     
     func MD5Filename() -> String {
         let MD5String = self.MD5String()
-        let pathExtension = self.pathExtension
+        let pathExtension = NSString(string: self).pathExtension
         if pathExtension.characters.count > 0 {
-            return MD5String.stringByAppendingPathExtension(pathExtension) ?? MD5String
+            return NSString(string: MD5String).stringByAppendingPathExtension(pathExtension) ?? MD5String
         } else {
             return MD5String
         }
