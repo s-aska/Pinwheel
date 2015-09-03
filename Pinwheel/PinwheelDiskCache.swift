@@ -370,10 +370,10 @@ private extension Pinwheel {
             }
             
             let buf: NSMutableData = NSMutableData()
-            hh.map({ (item) -> () in
+            for item in hh {
                 var i:UInt32 = item.littleEndian
                 buf.appendBytes(&i, length: sizeofValue(i))
-            })
+            }
             
             return buf.copy() as! NSData
         }

@@ -59,8 +59,8 @@ public class Pinwheel {
             self.imageView = imageView
             self.options = options
             self.downloadKey = key
-            self.diskCaheKey = "\t".join([key] + options.beforeDiskFilters.map { $0.cacheKey() })
-            self.memoryCaheKey = "\t".join([diskCaheKey] + options.beforeMemoryFilters.map { $0.cacheKey() })
+            self.diskCaheKey = ([key] + options.beforeDiskFilters.map { $0.cacheKey() }).joinWithSeparator("\t")
+            self.memoryCaheKey = ([diskCaheKey] + options.beforeMemoryFilters.map { $0.cacheKey() }).joinWithSeparator("\t")
         }
         
         func display(image: UIImage, loadedFrom: LoadedFrom) {
