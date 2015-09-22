@@ -1,6 +1,8 @@
 ![Pinwheel](http://aska.pw/img/pinwheel.svg?2014-12-18)
 
 [![Circle CI](https://circleci.com/gh/s-aska/Pinwheel.svg?style=svg)](https://circleci.com/gh/s-aska/Pinwheel)
+[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+[![](http://img.shields.io/badge/iOS-8.0%2B-brightgreen.svg?style=flat)]()
 
 Pinwheel is an Image Loading library written in Swift
 
@@ -22,29 +24,6 @@ Pinwheel is an Image Loading library written in Swift
 ## Architecture
 
 ![Architecture](http://aska.pw/img/pinwheel-architecture.svg?2014-12-23)
-
-## Requirements
-
-- iOS 8+
-- Xcode 7.0+
-
-
-## Installation
-
-Create a Cartfile that lists the frameworks you’d like to use in your project.
-
-```bash
-echo 'github "s-aska/Pinwheel"' >> Cartfile
-```
-
-Run `carthage update`
-
-```bash
-carthage update
-```
-
-On your application targets’ “General” settings tab, in the “Embedded Binaries” section, drag and drop each framework you want to use from the Carthage.build folder on disk.
-
 
 ## Usage
 
@@ -121,6 +100,32 @@ func scrollEnd() {
     Pinwheel.suspend = false
 }
 ```
+
+
+## Requirements
+
+- iOS 8.0+
+- Xcode 7.0+
+
+
+## Installation
+
+#### Carthage
+
+Add the following line to your [Cartfile](https://github.com/carthage/carthage)
+
+```
+github "s-aska/Pinwheel"
+```
+
+#### CocoaPods
+
+Add the following line to your [Podfile](https://guides.cocoapods.org/)
+
+```
+pod 'Pinwheel', :git => 'git@github.com:s-aska/Pinwheel.git'
+```
+
 
 ## License
 
