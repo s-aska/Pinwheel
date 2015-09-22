@@ -26,7 +26,7 @@ Pinwheel is an Image Loading library written in Swift
 ## Requirements
 
 - iOS 8+
-- Xcode 6.1
+- Xcode 7.0+
 
 
 ## Installation
