@@ -123,6 +123,7 @@ github "s-aska/Pinwheel"
 Add the following line to your [Podfile](https://guides.cocoapods.org/)
 
 ```
+use_frameworks!
 pod 'Pinwheel', :git => 'git@github.com:s-aska/Pinwheel.git'
 ```
 
