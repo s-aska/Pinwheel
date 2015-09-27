@@ -2,7 +2,8 @@
 
 [![Circle CI](https://circleci.com/gh/s-aska/Pinwheel.svg?style=svg)](https://circleci.com/gh/s-aska/Pinwheel)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
-[![](http://img.shields.io/badge/iOS-8.0%2B-brightgreen.svg?style=flat)]()
+[![](https://img.shields.io/badge/Xcode-7.0%2B-brightgreen.svg?style=flat)]()
+[![](https://img.shields.io/badge/iOS-8.0%2B-brightgreen.svg?style=flat)]()
 
 Pinwheel is an Image Loading library written in Swift
 
