@@ -1,5 +1,5 @@
 //
-//  PinwheelOperation.swift
+//  PinwheelAsyncOperation.swift
 //  Pinwheel
 //
 //  Created by Shinichiro Aska on 12/15/16.
@@ -14,30 +14,24 @@ extension Pinwheel {
         
         // MARK: - Types
         
-        enum State {
-            case Ready, Executing, Finished
-            func keyPath() -> String {
-                switch self {
-                case Ready:
-                    return "isReady"
-                case Executing:
-                    return "isExecuting"
-                case Finished:
-                    return "isFinished"
-                }
-            }
+        enum State: String {
+            case Waiting = "isWaiting"
+            case Ready = "isReady"
+            case Executing = "isExecuting"
+            case Finished = "isFinished"
+            case Cancelled = "isCancelled"
         }
         
         // MARK: - Properties
         
         var state: State {
             willSet {
-                willChangeValueForKey(newValue.keyPath())
-                willChangeValueForKey(state.keyPath())
+                willChangeValueForKey(newValue.rawValue)
+                willChangeValueForKey(state.rawValue)
             }
             didSet {
-                didChangeValueForKey(oldValue.keyPath())
-                didChangeValueForKey(state.keyPath())
+                didChangeValueForKey(oldValue.rawValue)
+                didChangeValueForKey(state.rawValue)
             }
         }
         
@@ -60,6 +54,10 @@ extension Pinwheel {
         
         override var finished: Bool {
             return state == .Finished
+        }
+        
+        override var cancelled: Bool {
+            return self.state == .Cancelled
         }
         
         override var asynchronous: Bool {
@@ -85,7 +83,7 @@ extension Pinwheel {
         
         override func cancel() {
             super.cancel()
-            state = .Finished
+            state = .Cancelled
         }
         
         func finish() {
@@ -112,7 +110,7 @@ extension Pinwheel {
         
         override func cancel() {
             super.cancel()
-            state = .Finished
+            state = .Cancelled
             task.cancel()
         }
         
