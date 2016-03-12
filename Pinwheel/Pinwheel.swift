@@ -142,8 +142,10 @@ public class Pinwheel {
                     } else {
                         Static.requests[request.downloadKey] = []
                         let task = DownloadTask(request)
-                        task.operation?.queuePriority = queuePriority
-                        Static.queue.addOperation(task.operation!) // Download from Network
+                        if let operation = task.operation {
+                            operation.queuePriority = queuePriority
+                            Static.queue.addOperation(operation) // Download from Network
+                        }
                     }
                 }
             }
