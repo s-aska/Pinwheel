@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		380F1DE21C9C35CD00195D32 /* PinwheelRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 380F1DE11C9C35CD00195D32 /* PinwheelRequestBuilder.swift */; };
 		38E82B4E1A40747C00EFDC81 /* Pinwheel.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 38E82B421A40747C00EFDC81 /* Pinwheel.framework */; };
 		38E82B551A40747C00EFDC81 /* PinwheelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38E82B541A40747C00EFDC81 /* PinwheelTests.swift */; };
 		38E82B611A40760F00EFDC81 /* PinwheelDisplayOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38E82B601A40760F00EFDC81 /* PinwheelDisplayOptions.swift */; };
@@ -30,6 +31,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		380F1DE11C9C35CD00195D32 /* PinwheelRequestBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinwheelRequestBuilder.swift; sourceTree = "<group>"; };
 		38E82B421A40747C00EFDC81 /* Pinwheel.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pinwheel.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		38E82B461A40747C00EFDC81 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		38E82B4D1A40747C00EFDC81 /* PinwheelTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PinwheelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,6 +90,7 @@
 			children = (
 				38E82B891A42796300EFDC81 /* Pinwheel.h */,
 				38E82B6A1A4076A800EFDC81 /* Pinwheel.swift */,
+				380F1DE11C9C35CD00195D32 /* PinwheelRequestBuilder.swift */,
 				38E82B6E1A4087D600EFDC81 /* PinwheelProtocol.swift */,
 				6A0A1CF31A40AFCD0035A03C /* PinwheelConfiguration.swift */,
 				38E82B601A40760F00EFDC81 /* PinwheelDisplayOptions.swift */,
@@ -238,6 +241,7 @@
 				6A0A1CF41A40AFCD0035A03C /* PinwheelConfiguration.swift in Sources */,
 				38E82B631A40761D00EFDC81 /* PinwheelAsyncOperation.swift in Sources */,
 				38E82B671A40763700EFDC81 /* PinwheelDiskCache.swift in Sources */,
+				380F1DE21C9C35CD00195D32 /* PinwheelRequestBuilder.swift in Sources */,
 				38E82B691A40764000EFDC81 /* PinwheelMemoryCache.swift in Sources */,
 				38E82B6F1A4087D600EFDC81 /* PinwheelProtocol.swift in Sources */,
 			);

@@ -78,6 +78,10 @@ public class Pinwheel {
                 }
             }))
         }
+        
+        var build: NSURLRequest {
+            return options.requestBuilder.build(url)
+        }
     }
     
     // MARK: - Public Methods
@@ -318,7 +322,7 @@ public class Pinwheel {
             
             let session = NSURLSession(configuration: config, delegate: self, delegateQueue: nil)
             
-            operation = DownloadOperation(task: session.downloadTaskWithURL(request.url), name: request.downloadKey)
+            operation = DownloadOperation(task: session.downloadTaskWithRequest(request.build), name: request.downloadKey)
         }
         
         func URLSession(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, didFinishDownloadingToURL location: NSURL) {

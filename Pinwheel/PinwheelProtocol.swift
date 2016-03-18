@@ -35,3 +35,8 @@ public protocol PinwheelDisplayer {
     
     func display(image: UIImage, imageView: UIImageView, loadedFrom: Pinwheel.LoadedFrom)
 }
+
+public protocol PinwheelRequestBuilder {
+    
+    func build(URL: NSURL) -> NSURLRequest
+}

@@ -18,6 +18,7 @@ public extension Pinwheel {
         public let memoryCache: PinwheelMemoryCacheProtocol?
         public let beforeDiskFilters: [PinwheelFilter]
         public let beforeMemoryFilters: [PinwheelFilter]
+        public let requestBuilder: PinwheelRequestBuilder
         public let displayer: PinwheelDisplayer
         public let prepare: ((UIImageView) -> Void)?
         public let failure: ((UIImageView, FailureReason, NSError, NSURL) -> Void)?
@@ -30,6 +31,7 @@ public extension Pinwheel {
             self.memoryCache = builder.memoryCache
             self.beforeDiskFilters = builder.beforeDiskFilters
             self.beforeMemoryFilters = builder.beforeMemoryFilters
+            self.requestBuilder = builder.requestBuilder
             self.displayer = builder.displayer
             self.prepare = builder.prepare
             self.failure = builder.failure
@@ -43,6 +45,7 @@ public extension Pinwheel {
             var memoryCache: PinwheelMemoryCacheProtocol? = Pinwheel.MemoryCache.sharedInstance()
             var beforeDiskFilters = [PinwheelFilter]()
             var beforeMemoryFilters = [PinwheelFilter]()
+            var requestBuilder: PinwheelRequestBuilder = Pinwheel.SimpleRequestBuilder()
             var displayer: PinwheelDisplayer = Pinwheel.SimpleDisplayer()
             var prepare: ((UIImageView) -> Void)?
             var failure: ((UIImageView, FailureReason, NSError, NSURL) -> Void)?
@@ -82,6 +85,11 @@ public extension Pinwheel {
                 case .BeforeMemory:
                     beforeMemoryFilters.append(filter)
                 }
+                return self
+            }
+            
+            public func requestBuilder(requestBuilder: PinwheelRequestBuilder) -> Builder {
+                self.requestBuilder = requestBuilder
                 return self
             }
             
