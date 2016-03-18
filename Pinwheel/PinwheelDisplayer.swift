@@ -9,22 +9,22 @@
 import UIKit
 
 public extension Pinwheel {
-    
+
     public class SimpleDisplayer: PinwheelDisplayer {
-        
+
         public init() {
         }
-        
+
         public func display(image: UIImage, imageView: UIImageView, loadedFrom: LoadedFrom) {
             imageView.image = image
         }
     }
-    
+
     public class FadeInDisplayer: PinwheelDisplayer {
-        
+
         public init() {
         }
-        
+
         public func display(image: UIImage, imageView: UIImageView, loadedFrom: LoadedFrom) {
             if loadedFrom == .Network {
                 imageView.alpha = 0

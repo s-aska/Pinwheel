@@ -9,34 +9,34 @@
 import UIKit
 
 public protocol PinwheelDiskCacheProtocol {
-    
+
     func get(key: String) -> NSData?
-    
+
     func set(key: String, data: NSData)
-    
+
     func remove(key: String)
 }
 
 public protocol PinwheelMemoryCacheProtocol {
-    
+
     func get(key: String) -> UIImage?
-    
+
     func set(key: String, image: UIImage)
 }
 
 public protocol PinwheelFilter {
-    
+
     func filter(image: UIImage) -> UIImage
-    
+
     func cacheKey() -> String
 }
 
 public protocol PinwheelDisplayer {
-    
+
     func display(image: UIImage, imageView: UIImageView, loadedFrom: Pinwheel.LoadedFrom)
 }
 
 public protocol PinwheelRequestBuilder {
-    
+
     func build(URL: NSURL) -> NSURLRequest
 }

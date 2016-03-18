@@ -9,12 +9,12 @@
 import Foundation
 
 public extension Pinwheel {
-    
+
     public class SimpleRequestBuilder: PinwheelRequestBuilder {
-        
+
         public init() {
         }
-        
+
         public func build(URL: NSURL) -> NSURLRequest {
             return NSURLRequest(URL: URL)
         }

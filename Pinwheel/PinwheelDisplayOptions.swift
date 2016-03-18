@@ -9,7 +9,7 @@
 import UIKit
 
 public extension Pinwheel {
-    
+
     public struct DisplayOptions {
         public let queuePriority: NSOperationQueuePriority?
         public let timeoutIntervalForRequest: NSTimeInterval?
@@ -22,7 +22,7 @@ public extension Pinwheel {
         public let displayer: PinwheelDisplayer
         public let prepare: ((UIImageView) -> Void)?
         public let failure: ((UIImageView, FailureReason, NSError, NSURL) -> Void)?
-        
+
         init (_ builder: Builder) {
             self.queuePriority = builder.queuePriority
             self.timeoutIntervalForRequest = builder.timeoutIntervalForRequest
@@ -36,7 +36,7 @@ public extension Pinwheel {
             self.prepare = builder.prepare
             self.failure = builder.failure
         }
-        
+
         public class Builder {
             var queuePriority: NSOperationQueuePriority?
             var timeoutIntervalForRequest: NSTimeInterval?
@@ -49,35 +49,35 @@ public extension Pinwheel {
             var displayer: PinwheelDisplayer = Pinwheel.SimpleDisplayer()
             var prepare: ((UIImageView) -> Void)?
             var failure: ((UIImageView, FailureReason, NSError, NSURL) -> Void)?
-            
+
             public init () {
             }
-            
+
             public func queuePriority(queuePriority: NSOperationQueuePriority) -> Builder {
                 self.queuePriority = queuePriority
                 return self
             }
-            
+
             public func timeoutIntervalForRequest(timeoutIntervalForRequest: NSTimeInterval) -> Builder {
                 self.timeoutIntervalForRequest = timeoutIntervalForRequest
                 return self
             }
-            
+
             public func timeoutIntervalForResource(timeoutIntervalForResource: NSTimeInterval) -> Builder {
                 self.timeoutIntervalForResource = timeoutIntervalForResource
                 return self
             }
-            
+
             public func diskCache(diskCache: PinwheelDiskCacheProtocol?) -> Builder {
                 self.diskCache = diskCache
                 return self
             }
-            
+
             public func memoryCache(memoryCache: PinwheelMemoryCacheProtocol?) -> Builder {
                 self.memoryCache = memoryCache
                 return self
             }
-            
+
             public func addFilter(filter: PinwheelFilter, hook: Hook) -> Builder {
                 switch hook {
                 case .BeforeDisk:
@@ -87,27 +87,27 @@ public extension Pinwheel {
                 }
                 return self
             }
-            
+
             public func requestBuilder(requestBuilder: PinwheelRequestBuilder) -> Builder {
                 self.requestBuilder = requestBuilder
                 return self
             }
-            
+
             public func displayer(displayer: PinwheelDisplayer) -> Builder {
                 self.displayer = displayer
                 return self
             }
-            
+
             public func prepare(prepare: ((UIImageView) -> Void)?) -> Builder {
                 self.prepare = prepare
                 return self
             }
-            
+
             public func failure(failure: ((UIImageView, FailureReason, NSError, NSURL) -> Void)?) -> Builder {
                 self.failure = failure
                 return self
             }
-            
+
             public func build() -> DisplayOptions {
                 return DisplayOptions(self)
             }
