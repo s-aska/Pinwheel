@@ -2,7 +2,7 @@
 
 [![Build Status](https://www.bitrise.io/app/dd8a6843f2c0b21d.svg?token=xgz6qdSPvM0HND-zDTm2zg)](https://www.bitrise.io/app/dd8a6843f2c0b21d)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
-[![](https://img.shields.io/badge/Xcode-7.0%2B-brightgreen.svg?style=flat)]()
+[![](https://img.shields.io/badge/Xcode-7.3%2B-brightgreen.svg?style=flat)]()
 [![](https://img.shields.io/badge/iOS-8.0%2B-brightgreen.svg?style=flat)]()
 
 Pinwheel is an Image Loading library written in Swift
