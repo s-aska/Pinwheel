@@ -366,6 +366,23 @@ public class ImageLoader {
         }
 
         func URLSession(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, didFinishDownloadingToURL location: NSURL) {
+            if let response = downloadTask.response as? NSHTTPURLResponse {
+                if response.statusCode >= 400 {
+                    ImageLoader.onFailure(self.request, reason: .InvalidData, error: ImageLoader.error("invalid statusCode [\(response.statusCode)]"))
+                    Logger.log("[error] \(self.request.downloadKey) download failure invalid statusCode [\(response.statusCode)]")
+                    self.operation?.cancel()
+                    self.operation = nil
+                    return
+                }
+                if let contentType = response.allHeaderFields["Content-Type"] as? String {
+                    if !contentType.hasPrefix("image/") {
+                        ImageLoader.onFailure(self.request, reason: .InvalidData, error: ImageLoader.error("invalid header Content-Type [\(contentType)]"))
+                        Logger.log("[error] \(self.request.downloadKey) download failure invalid header Content-Type [\(contentType)]")
+                        self.operation?.cancel()
+                        self.operation = nil
+                    }
+                }
+            }
             if let data = NSData(contentsOfURL: location) {
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), {
                     // Check UIImage compatible

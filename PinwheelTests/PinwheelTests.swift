@@ -64,13 +64,16 @@ class PinwheelTests: XCTestCase {
             .build()
 
         class TestListener: ImageLoadingListener {
+            var expectation: XCTestExpectation?
             private func onLoadingCancelled(url: NSURL, imageView: UIImageView) {
                 NSLog("onLoadingCancelled: url:\(url.absoluteString)")
             }
             private func onLoadingComplete(url: NSURL, imageView: UIImageView, image: UIImage, loadedFrom: LoadedFrom) {
+                expectation?.fulfill()
                 NSLog("onLoadingComplete: url:\(url.absoluteString)")
             }
             private func onLoadingFailed(url: NSURL, imageView: UIImageView, reason: FailureReason) {
+                expectation?.fulfill()
                 NSLog("onLoadingFailed: url:\(url.absoluteString)")
             }
             private func onLoadingStarted(url: NSURL, imageView: UIImageView) {
@@ -78,9 +81,32 @@ class PinwheelTests: XCTestCase {
             }
         }
 
-        ImageLoader.displayImage(NSURL(), imageView: UIImageView(), options: options, loadingListener: TestListener())
-        ImageLoader.displayImage(NSURL(string: "http://example.com/")!, imageView: UIImageView(), options: options, loadingListener: TestListener())
-        ImageLoader.displayImage(NSURL(string: "http://127.0.0.1:" + server.port.description + "/hoge")!, imageView: UIImageView(), options: options, loadingListener: TestListener())
+        class TestProgressListener: ImageLoadingProgressListener {
+            private func onProgressUpdate(url: NSURL, imageView: UIImageView, current: Int64, total: Int64) {
+                NSLog("onProgressUpdate: url:\(url.absoluteString) \(current)/\(total)")
+            }
+        }
+
+        let listener = TestListener()
+        listener.expectation = self.expectationWithDescription("blank url")
+        ImageLoader.displayImage(NSURL(), imageView: UIImageView(), options: options,
+                                 loadingListener: listener, loadingProgressListener: TestProgressListener())
+        self.waitForExpectationsWithTimeout(3, handler: nil)
+
+        listener.expectation = self.expectationWithDescription("success")
+        ImageLoader.displayImage(NSURL(string: "http://127.0.0.1:" + server.port.description + "/black.png")!, imageView: UIImageView(), options: options,
+                                 loadingListener: listener, loadingProgressListener: TestProgressListener())
+        self.waitForExpectationsWithTimeout(3, handler: nil)
+
+        listener.expectation = self.expectationWithDescription("not found")
+        ImageLoader.displayImage(NSURL(string: "http://127.0.0.1:" + server.port.description + "/error.png")!, imageView: UIImageView(), options: options,
+                                 loadingListener: listener, loadingProgressListener: TestProgressListener())
+        self.waitForExpectationsWithTimeout(3, handler: nil)
+
+        listener.expectation = self.expectationWithDescription("html")
+        ImageLoader.displayImage(NSURL(string: "http://127.0.0.1:" + server.port.description + "/index.html")!, imageView: UIImageView(), options: options,
+                                 loadingListener: listener, loadingProgressListener: TestProgressListener())
+        self.waitForExpectationsWithTimeout(3, handler: nil)
 
         XCTAssertEqual(options.queuePriority!, NSOperationQueuePriority.VeryLow)
         XCTAssertEqual(options.timeoutIntervalForRequest!, 8)

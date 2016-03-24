@@ -1,5 +1,6 @@
 included:
 - Pinwheel
+- PinwheelTests
 disabled_rules:
 - line_length
 - function_body_length
