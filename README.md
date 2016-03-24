@@ -7,8 +7,6 @@
 
 Pinwheel is an Image Loading library written in Swift
 
-:warning: **DEVELOPER RELEASE**
-
 ## Features
 
 - [ ] Comprehensive Unit Test Coverage
@@ -31,7 +29,7 @@ Pinwheel is an Image Loading library written in Swift
 ### Minimum
 
 ```swift
-Pinwheel.displayImage(url, imageView: imageView)
+ImageLoader.displayImage(url, imageView: imageView)
 ```
 
 ### Optimized for violent scroll. eg. Twitter Client
@@ -47,8 +45,8 @@ import UIKit
 import Pinwheel
 
 struct MyDisplayOptions {
-    static let photo = Pinwheel.DisplayOptions.Builder()
-        .displayer(Pinwheel.FadeInDisplayer())
+    static let photo = DisplayOptions.Builder()
+        .displayer(FadeInDisplayer())
         .queuePriority(NSOperationQueuePriority.Low)
         .prepare { (imageView) -> Void in
             // run only at the time of download
@@ -66,25 +64,25 @@ struct MyDisplayOptions {
         }
         .build()
 
-    static let userIcon = Pinwheel.DisplayOptions.Builder()
+    static let userIcon = DisplayOptions.Builder()
         .addFilter(RoundedFilter(r: 6, w: 42, h: 42), hook: .BeforeMemory)
-        .displayer(Pinwheel.FadeInDisplayer())
+        .displayer(FadeInDisplayer())
         .build()
 
-    static let userIconXS = Pinwheel.DisplayOptions.Builder()
+    static let userIconXS = DisplayOptions.Builder()
         .addFilter(RoundedFilter(r: 2, w: 16, h: 16), hook: .BeforeMemory)
-        .displayer(Pinwheel.FadeInDisplayer())
+        .displayer(FadeInDisplayer())
         .build()
 }
 
 // photo
-Pinwheel.displayImage(url, imageView: imageView, options: MyDisplayOptions.photo)
+ImageLoader.displayImage(url, imageView: imageView, options: MyDisplayOptions.photo)
 
 // user icon
-Pinwheel.displayImage(url, imageView: imageView, options: MyDisplayOptions.userIcon)
+ImageLoader.displayImage(url, imageView: imageView, options: MyDisplayOptions.userIcon)
 
 // small user icon
-Pinwheel.displayImage(url, imageView: imageView, options: MyDisplayOptions.userIconXS)
+ImageLoader.displayImage(url, imageView: imageView, options: MyDisplayOptions.userIconXS)
 
 
 ```
@@ -93,12 +91,12 @@ Pinwheel.displayImage(url, imageView: imageView, options: MyDisplayOptions.userI
 
 ```swift
 func scrollToTop() {
-    Pinwheel.suspend = true
+    ImageLoader.suspend = true
     self.tableView.setContentOffset(CGPointZero, animated: true)
 }
 
 func scrollEnd() {
-    Pinwheel.suspend = false
+    ImageLoader.suspend = false
 }
 ```
 
@@ -106,7 +104,7 @@ func scrollEnd() {
 ## Requirements
 
 - iOS 8.0+
-- Xcode 7.0+
+- Xcode 7.3+
 
 
 ## Installation

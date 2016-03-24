@@ -14,7 +14,7 @@ class PinwheelTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        Loader.setup(Configuration.Builder().debug().build())
+        ImageLoader.setup(Configuration.Builder().debug().build())
     }
 
     override func tearDown() {
@@ -56,8 +56,8 @@ class PinwheelTests: XCTestCase {
             }
             .build()
 
-        Loader.displayImage(NSURL(), imageView: UIImageView(), options: options)
-        Loader.displayImage(NSURL(string: "http://example.com/")!, imageView: UIImageView(), options: options)
+        ImageLoader.displayImage(NSURL(), imageView: UIImageView(), options: options)
+        ImageLoader.displayImage(NSURL(string: "http://example.com/")!, imageView: UIImageView(), options: options)
 
         XCTAssertEqual(options.queuePriority!, NSOperationQueuePriority.VeryLow)
         XCTAssertEqual(options.timeoutIntervalForRequest!, 8)

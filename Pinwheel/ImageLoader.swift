@@ -25,7 +25,7 @@ public enum Hook {
     case BeforeMemory
 }
 
-public class Loader {
+public class ImageLoader {
 
     // MARK: - Types
 
@@ -42,6 +42,10 @@ public class Loader {
     public class var suspend: Bool {
         get { return Static.displayQueue.suspended }
         set { Static.displayQueue.suspended = newValue }
+    }
+
+    public class var isDebug: Bool {
+        get { return Static.config.isDebug }
     }
 
     // MARK: - Request
@@ -70,7 +74,7 @@ public class Loader {
                         dispatch_async(dispatch_get_main_queue(), {
                             self.options.displayer.display(image, imageView: self.imageView, loadedFrom: loadedFrom)
                             op.finish()
-                            Loader.DLog("[debug] \(self.downloadKey) display hashValue:\(self.imageView.hashValue)")
+                            Logger.log("[debug] \(self.downloadKey) display hashValue:\(self.imageView.hashValue)")
                         })
                     } else {
                         op.finish()
@@ -103,14 +107,14 @@ public class Loader {
             dispatch_sync(Static.serial) {
                 let oldDownloadKeyOpt = Static.imageViewState[imageView.hashValue]
                 Static.imageViewState[imageView.hashValue] = request.downloadKey
-                Loader.DLog("[debug] \(request.downloadKey) request hashValue:\(imageView.hashValue)")
+                Logger.log("[debug] \(request.downloadKey) request hashValue:\(imageView.hashValue)")
                 if let oldDownloadKey = oldDownloadKeyOpt {
                     let visibles = Array(Static.imageViewState.values.filter { $0 == oldDownloadKey })
                     if visibles.count == 0 {
                         let queuePriority = NSOperationQueuePriority.VeryLow
                         let count = self.updateQueuePriorityByName(oldDownloadKey, queuePriority: queuePriority)
                         if count > 0 {
-                            Loader.DLog("[debug] \(oldDownloadKey) priority down \(count) operations")
+                            Logger.log("[debug] \(oldDownloadKey) priority down \(count) operations")
                         }
                     }
                 }
@@ -141,7 +145,7 @@ public class Loader {
                         Static.requests[request.downloadKey] = requests + [request]
                         let count = self.updateQueuePriorityByName(request.downloadKey, queuePriority: queuePriority)
                         if count > 0 {
-                            Loader.DLog("[debug] \(request.downloadKey) priority up \(count) operations")
+                            Logger.log("[debug] \(request.downloadKey) priority up \(count) operations")
                         }
                     } else {
                         Static.requests[request.downloadKey] = []
@@ -167,14 +171,6 @@ public class Loader {
             }
         }
         return count
-    }
-
-    // MARK: - Logger
-
-    class func DLog(message: String, function: String = #function) {
-        if Static.config.isDebug {
-            NSLog(message)
-        }
     }
 
     // MARK: - Filter
@@ -263,7 +259,7 @@ public class Loader {
             }
         }
 
-        DLog("[debug] \(request.downloadKey) views:\(displayViews) groups:\(displayViewGroups) queue:\(Static.queue.operationCount)")
+        Logger.log("[debug] \(request.downloadKey) views:\(displayViews) groups:\(displayViewGroups) queue:\(Static.queue.operationCount)")
     }
 
     class func onFailure(request: Request, reason: FailureReason, error: NSError) {
@@ -290,8 +286,6 @@ public class Loader {
                 }
             }
         }
-
-        // FIXME: implements showImageOnFail.
     }
 
     class func error(description: String) -> NSError {
@@ -330,19 +324,19 @@ public class Loader {
             if let data = NSData(contentsOfURL: location) {
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), {
                     // Check UIImage compatible
-                    if let image = Loader.filterAndSaveDisk(self.request, data: data) {
-                        Loader.onSuccess(self.request, image: image, loadedFrom: .Network)
+                    if let image = ImageLoader.filterAndSaveDisk(self.request, data: data) {
+                        ImageLoader.onSuccess(self.request, image: image, loadedFrom: .Network)
                     } else {
-                        Loader.onFailure(self.request, reason: .InvalidData, error: Loader.error("invalid data from network can't convert UIImage."))
-                        Loader.DLog("[error] \(self.request.downloadKey) download failure:Can't convert UIImage")
+                        ImageLoader.onFailure(self.request, reason: .InvalidData, error: ImageLoader.error("invalid data from network can't convert UIImage."))
+                        Logger.log("[error] \(self.request.downloadKey) download failure:Can't convert UIImage")
                     }
                     self.operation?.finish()
                     self.operation = nil
                 })
             } else {
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), {
-                    Loader.onFailure(self.request, reason: .InvalidData, error: Loader.error("invalid data from network can't convert NSData."))
-                    Loader.DLog("[error] \(self.request.downloadKey) download failure:Can't convert NSData")
+                    ImageLoader.onFailure(self.request, reason: .InvalidData, error: ImageLoader.error("invalid data from network can't convert NSData."))
+                    Logger.log("[error] \(self.request.downloadKey) download failure:Can't convert NSData")
                     self.operation?.cancel()
                     self.operation = nil
                 })
@@ -351,8 +345,8 @@ public class Loader {
 
         func URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError error: NSError?) {
             if let e = error {
-                Loader.onFailure(request, reason: .NetworkError, error: e)
-                Loader.DLog("[warn] \(request.downloadKey) download failure:\(e.debugDescription)")
+                ImageLoader.onFailure(request, reason: .NetworkError, error: e)
+                Logger.log("[warn] \(request.downloadKey) download failure:\(e.debugDescription)")
             }
         }
     }

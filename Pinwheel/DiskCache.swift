@@ -93,7 +93,7 @@ public class DiskCache: DiskCacheProtocol {
                 }
             } catch {
             }
-            Loader.DLog("[debug] disk cache init disk usage total \(self.fileURLs.count) files \(self.totalSize) bytes")
+            Logger.log("[debug] disk cache init disk usage total \(self.fileURLs.count) files \(self.totalSize) bytes")
             self.diet()
             op.finish()
             }))
@@ -122,7 +122,7 @@ public class DiskCache: DiskCacheProtocol {
         do {
             data = try NSData(contentsOfFile: path, options: [])
         } catch let error as NSError {
-            Loader.DLog("[error] \(key) disk cache read error:\(error.debugDescription)")
+            Logger.log("[error] \(key) disk cache read error:\(error.debugDescription)")
             return nil
         }
 
@@ -131,7 +131,7 @@ public class DiskCache: DiskCacheProtocol {
             do {
                 try fileManager.setAttributes([NSFileModificationDate : now], ofItemAtPath: path)
             } catch let error as NSError {
-                Loader.DLog("[error] \(key) disk cache setAttributes error:\(error.debugDescription)")
+                Logger.log("[error] \(key) disk cache setAttributes error:\(error.debugDescription)")
             } catch {
                 fatalError()
             }
@@ -150,7 +150,7 @@ public class DiskCache: DiskCacheProtocol {
         do {
             try data.writeToFile(path, options: NSDataWritingOptions.AtomicWrite)
         } catch let error as NSError {
-            Loader.DLog("[error] \(key) disk cache write error:\(error.debugDescription)")
+            Logger.log("[error] \(key) disk cache write error:\(error.debugDescription)")
             return
         }
         let newSize = self.size(path: path)
@@ -160,7 +160,7 @@ public class DiskCache: DiskCacheProtocol {
             self.fileURLs.append(fileURL)
             self.totalSize -= oldSize
             self.totalSize += newSize
-            Loader.DLog("[debug] \(key) disk cache write success size:\(oldSize) => \(newSize) total \(self.fileURLs.count) files \(self.totalSize) bytes")
+            Logger.log("[debug] \(key) disk cache write success size:\(oldSize) => \(newSize) total \(self.fileURLs.count) files \(self.totalSize) bytes")
             self.diet()
             op.finish()
             }))
@@ -174,13 +174,13 @@ public class DiskCache: DiskCacheProtocol {
         do {
             try fileManager.removeItemAtPath(path)
         } catch let error as NSError {
-            Loader.DLog("[error] disk cache removeItemAtPath:\(path) error:\(error.description)")
+            Logger.log("[error] disk cache removeItemAtPath:\(path) error:\(error.description)")
             return
         }
         queue.addOperation(AsyncBlockOperation({ [unowned self] (op: AsyncBlockOperation) in
             self.totalSize -= oldSize
             self.fileURLs = self.fileURLs.filter { $0 != fileURL }
-            Loader.DLog("[debug] \(key) disk cache remove success size:\(oldSize) => 0 total \(self.fileURLs.count) files \(self.totalSize) bytes")
+            Logger.log("[debug] \(key) disk cache remove success size:\(oldSize) => 0 total \(self.fileURLs.count) files \(self.totalSize) bytes")
             op.finish()
             }))
     }
@@ -196,14 +196,14 @@ public class DiskCache: DiskCacheProtocol {
                         self.totalSize -= oldSize
                         return false
                     } catch let error as NSError {
-                        Loader.DLog("[error] disk cache removeItemAtPath:\(path) error:\(error.description)")
+                        Logger.log("[error] disk cache removeItemAtPath:\(path) error:\(error.description)")
                     } catch {
                         fatalError()
                     }
                 }
                 return true
             })
-            Loader.DLog("[debug] disk cache clear disk usage total \(self.fileURLs.count) files \(self.totalSize) bytes")
+            Logger.log("[debug] disk cache clear disk usage total \(self.fileURLs.count) files \(self.totalSize) bytes")
             op.finish()
             }))
     }
@@ -228,7 +228,7 @@ public class DiskCache: DiskCacheProtocol {
                         self.totalSize -= oldSize
                         return false
                     } catch let error as NSError {
-                        Loader.DLog("[error] disk cache removeItemAtPath:\(path) error:\(error.description)")
+                        Logger.log("[error] disk cache removeItemAtPath:\(path) error:\(error.description)")
                     } catch {
                         fatalError()
                     }
@@ -237,7 +237,7 @@ public class DiskCache: DiskCacheProtocol {
             return true
         })
 
-        Loader.DLog("[debug] disk cache diet disk usage total \(self.fileURLs.count) files \(self.totalSize) bytes")
+        Logger.log("[debug] disk cache diet disk usage total \(self.fileURLs.count) files \(self.totalSize) bytes")
     }
 
     public func waitUntilAllOperationsAreFinished() {
