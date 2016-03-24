@@ -160,10 +160,10 @@ public class Pinwheel {
 
     class func updateQueuePriorityByName(name: String, queuePriority: NSOperationQueuePriority) -> Int {
         var count = 0
-        for operation in Static.queue.operations as! [Pinwheel.DownloadOperation] {
+        for operation in Static.queue.operations as? [Pinwheel.DownloadOperation] ?? [] {
             if operation.name == name && operation.queuePriority != queuePriority {
                 operation.queuePriority = queuePriority
-                count++
+                count += 1
             }
         }
         return count
@@ -171,7 +171,7 @@ public class Pinwheel {
 
     // MARK: - Logger
 
-    class func DLog(message: String, function: String = __FUNCTION__) {
+    class func DLog(message: String, function: String = #function) {
         if Static.config.isDebug {
             NSLog(message)
         }
@@ -196,7 +196,8 @@ public class Pinwheel {
         return nil
     }
 
-    class func filterAndSaveMemory(request: Request, var image: UIImage) -> UIImage {
+    class func filterAndSaveMemory(request: Request, image: UIImage) -> UIImage {
+        var image = image
         for filter in request.options.beforeMemoryFilters {
             image = filter.filter(image)
         }
@@ -221,7 +222,7 @@ public class Pinwheel {
 
             if Static.imageViewState[request.imageView.hashValue] == request.downloadKey {
                 request.display(image, loadedFrom: loadedFrom)
-                displayViews++
+                displayViews += 1
             }
 
             if var stacks = Static.requests.removeValueForKey(request.downloadKey) {
@@ -234,12 +235,12 @@ public class Pinwheel {
                 for stack in stacks {
                     if stack.memoryCaheKey == request.memoryCaheKey {
                         stack.display(image, loadedFrom: loadedFrom)
-                        displayViews++
+                        displayViews += 1
                     } else if stackGroup[stack.memoryCaheKey] != nil {
                         stackGroup[stack.memoryCaheKey]?.append(stack)
                     } else {
                         stackGroup[stack.memoryCaheKey] = [stack]
-                        displayViewGroups++
+                        displayViewGroups += 1
                     }
                 }
 
@@ -255,7 +256,7 @@ public class Pinwheel {
                                 isFirst = false
                             }
                             stackInGroup.display(image, loadedFrom: loadedFrom)
-                            displayViews++
+                            displayViews += 1
                         }
                     }
                 }

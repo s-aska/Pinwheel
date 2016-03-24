@@ -266,6 +266,11 @@ public extension Pinwheel {
     }
 }
 
+// swiftlint:disable comma
+// swiftlint:disable variable_name
+// swiftlint:disable control_statement
+// swiftlint:disable valid_docs
+
 // MARK: - MD5
 
 // The following is an altered source version that only includes MD5. The original software can be found at:
@@ -375,7 +380,7 @@ private extension Pinwheel {
                 buf.appendBytes(&i, length: sizeofValue(i))
             }
 
-            return buf.copy() as! NSData
+            return buf.copy() as? NSData ?? NSData()
         }
     }
 }
@@ -408,7 +413,7 @@ private extension String {
     }
 }
 
-/** array of bytes, little-endian representation */
+/// array of bytes, little-endian representation
 func arrayOfBytes<T>(value: T, length: Int? = nil) -> [UInt8] {
     let totalBytes = length ?? (sizeofValue(value) * 8)
 
@@ -428,7 +433,7 @@ func arrayOfBytes<T>(value: T, length: Int? = nil) -> [UInt8] {
 }
 
 extension Int {
-    /** Array of bytes with optional padding (little-endian) */
+    /// Array of bytes with optional padding (little-endian)
     public func bytes(totalBytes: Int = sizeof(Int)) -> [UInt8] {
         return arrayOfBytes(self, length: totalBytes)
     }
@@ -437,7 +442,7 @@ extension Int {
 
 extension NSMutableData {
 
-    /** Convenient way to append bytes */
+    /// Convenient way to append bytes
     internal func appendBytes(arrayOfBytes: [UInt8]) {
         self.appendBytes(arrayOfBytes, length: arrayOfBytes.count)
     }
@@ -452,7 +457,7 @@ class HashBase {
         self.message = message
     }
 
-    /** Common part for hash calculation. Prepare header data. */
+    /// Common part for hash calculation. Prepare header data.
     func prepare(len: Int = 64) -> NSMutableData {
         let tmpMessage: NSMutableData = NSMutableData(data: self.message)
 
@@ -463,8 +468,8 @@ class HashBase {
         var msgLength = tmpMessage.length
         var counter = 0
         while msgLength % len != (len - 8) {
-            counter++
-            msgLength++
+            counter += 1
+            msgLength += 1
         }
         let bufZeros = UnsafeMutablePointer<UInt8>(calloc(counter, sizeof(UInt8)))
         tmpMessage.appendBytes(bufZeros, length: counter)
