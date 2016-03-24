@@ -1,6 +1,6 @@
 ![Pinwheel](http://aska.pw/img/pinwheel.svg?2014-12-18)
 
-[![Circle CI](https://circleci.com/gh/s-aska/Pinwheel.svg?style=svg)](https://circleci.com/gh/s-aska/Pinwheel)
+[![Build Status](https://www.bitrise.io/app/dd8a6843f2c0b21d.svg?token=xgz6qdSPvM0HND-zDTm2zg)](https://www.bitrise.io/app/dd8a6843f2c0b21d)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 [![](https://img.shields.io/badge/Xcode-7.0%2B-brightgreen.svg?style=flat)]()
 [![](https://img.shields.io/badge/iOS-8.0%2B-brightgreen.svg?style=flat)]()
