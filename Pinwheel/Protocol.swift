@@ -40,3 +40,25 @@ public protocol RequestBuilder {
 
     func build(URL: NSURL) -> NSURLRequest
 }
+
+public protocol ImageLoadingListener {
+
+    func onLoadingStarted(url: NSURL, imageView: UIImageView)
+
+    func onLoadingFailed(url: NSURL, imageView: UIImageView, reason: FailureReason)
+
+    func onLoadingComplete(url: NSURL, imageView: UIImageView, image: UIImage, loadedFrom: LoadedFrom)
+
+    func onLoadingCancelled(url: NSURL, imageView: UIImageView)
+}
+
+public protocol ImageLoadingProgressListener {
+    func onProgressUpdate(url: NSURL, imageView: UIImageView, current: Int64, total: Int64)
+}
+
+public protocol DownlaodListener {
+
+    func onStart()
+
+    func onCancel()
+}

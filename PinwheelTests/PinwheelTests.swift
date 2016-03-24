@@ -56,8 +56,23 @@ class PinwheelTests: XCTestCase {
             }
             .build()
 
-        ImageLoader.displayImage(NSURL(), imageView: UIImageView(), options: options)
-        ImageLoader.displayImage(NSURL(string: "http://example.com/")!, imageView: UIImageView(), options: options)
+        class TestListener: ImageLoadingListener {
+            private func onLoadingCancelled(url: NSURL, imageView: UIImageView) {
+                NSLog("onLoadingCancelled: url:\(url.absoluteString)")
+            }
+            private func onLoadingComplete(url: NSURL, imageView: UIImageView, image: UIImage, loadedFrom: LoadedFrom) {
+                NSLog("onLoadingComplete: url:\(url.absoluteString)")
+            }
+            private func onLoadingFailed(url: NSURL, imageView: UIImageView, reason: FailureReason) {
+                NSLog("onLoadingFailed: url:\(url.absoluteString)")
+            }
+            private func onLoadingStarted(url: NSURL, imageView: UIImageView) {
+                NSLog("onLoadingStarted: url:\(url.absoluteString)")
+            }
+        }
+        
+        ImageLoader.displayImage(NSURL(), imageView: UIImageView(), options: options, loadingListener: TestListener())
+        ImageLoader.displayImage(NSURL(string: "http://example.com/")!, imageView: UIImageView(), options: options, loadingListener: TestListener())
 
         XCTAssertEqual(options.queuePriority!, NSOperationQueuePriority.VeryLow)
         XCTAssertEqual(options.timeoutIntervalForRequest!, 8)
