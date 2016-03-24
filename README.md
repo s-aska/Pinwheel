@@ -16,8 +16,8 @@ Pinwheel is an Image Loading library written in Swift
 - [x] Memory Cache
 - [x] Disk Cache
 - [x] Timeout Settings ( timeoutIntervalForRequest / timeoutIntervalForResource )
-- [ ] Cache Settings
-- [ ] ImageLoadingListener
+- [x] Cache Settings
+- [x] ImageLoadingListener
 
 
 ## Architecture
@@ -98,6 +98,50 @@ func scrollToTop() {
 func scrollEnd() {
     ImageLoader.suspend = false
 }
+```
+
+
+### Cache Settings
+
+```swift
+// Simple
+DiskCache.sharedInstance().cacheSize(10 * 1024 * 1024)
+
+// Professional
+DisplayOptions.Builder()
+    .diskCache(YourDiskCache())
+    .memoryCache(YourMemoryCache())
+    .build()
+```
+
+
+### ImageLoadingListener / ImageLoadingProgressListener
+
+```swift
+class DebugListener: ImageLoadingListener {
+    func onLoadingCancelled(url: NSURL, imageView: UIImageView) {
+        NSLog("onLoadingCancelled: url:\(url.absoluteString)")
+    }
+    func onLoadingComplete(url: NSURL, imageView: UIImageView, image: UIImage, loadedFrom: LoadedFrom) {
+        NSLog("onLoadingComplete: url:\(url.absoluteString)")
+    }
+    func onLoadingFailed(url: NSURL, imageView: UIImageView, reason: FailureReason) {
+        NSLog("onLoadingFailed: url:\(url.absoluteString)")
+    }
+    func onLoadingStarted(url: NSURL, imageView: UIImageView) {
+        NSLog("onLoadingStarted: url:\(url.absoluteString)")
+    }
+}
+
+class DebugProgressListener: ImageLoadingProgressListener {
+    func onProgressUpdate(url: NSURL, imageView: UIImageView, current: Int64, total: Int64) {
+        NSLog("onProgressUpdate: url:\(url.absoluteString) \(current)/\(total)")
+    }
+}
+
+ImageLoader.displayImage(url, imageView: imageView, options: Static.defaultOptions,
+    loadingListener: DebugListener(),
+    loadingProgressListener: DebugProgressListener())
 ```
 
 
