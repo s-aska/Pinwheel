@@ -12,13 +12,20 @@ import Pinwheel
 
 class PinwheelTests: XCTestCase {
 
+    let server = TestServer()
+
     override func setUp() {
         super.setUp()
+        do {
+            try server.start()
+        } catch {
+            XCTFail("Failed to start server")
+        }
         ImageLoader.setup(Configuration.Builder().debug().build())
     }
 
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        server.stop()
         super.tearDown()
     }
 
@@ -70,9 +77,10 @@ class PinwheelTests: XCTestCase {
                 NSLog("onLoadingStarted: url:\(url.absoluteString)")
             }
         }
-        
+
         ImageLoader.displayImage(NSURL(), imageView: UIImageView(), options: options, loadingListener: TestListener())
         ImageLoader.displayImage(NSURL(string: "http://example.com/")!, imageView: UIImageView(), options: options, loadingListener: TestListener())
+        ImageLoader.displayImage(NSURL(string: "http://127.0.0.1:" + server.port.description + "/hoge")!, imageView: UIImageView(), options: options, loadingListener: TestListener())
 
         XCTAssertEqual(options.queuePriority!, NSOperationQueuePriority.VeryLow)
         XCTAssertEqual(options.timeoutIntervalForRequest!, 8)

@@ -9,7 +9,7 @@ Pinwheel is an Image Loading library written in Swift
 
 ## Features
 
-- [ ] Comprehensive Unit Test Coverage
+- [x] Comprehensive Unit Test Coverage
 - [x] Carthage support
 - [x] Priority control in accordance with the visibility
 - [x] Combine HTTP Request to the same URL
