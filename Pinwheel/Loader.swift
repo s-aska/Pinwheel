@@ -1,5 +1,5 @@
 //
-//  Pinwheel.swift
+//  Loader.swift
 //  Pinwheel
 //
 //  Created by Shinichiro Aska on 12/15/16.
@@ -25,7 +25,7 @@ public enum Hook {
     case BeforeMemory
 }
 
-public class Pinwheel {
+public class Loader {
 
     // MARK: - Types
 
@@ -70,7 +70,7 @@ public class Pinwheel {
                         dispatch_async(dispatch_get_main_queue(), {
                             self.options.displayer.display(image, imageView: self.imageView, loadedFrom: loadedFrom)
                             op.finish()
-                            Pinwheel.DLog("[debug] \(self.downloadKey) display hashValue:\(self.imageView.hashValue)")
+                            Loader.DLog("[debug] \(self.downloadKey) display hashValue:\(self.imageView.hashValue)")
                         })
                     } else {
                         op.finish()
@@ -103,14 +103,14 @@ public class Pinwheel {
             dispatch_sync(Static.serial) {
                 let oldDownloadKeyOpt = Static.imageViewState[imageView.hashValue]
                 Static.imageViewState[imageView.hashValue] = request.downloadKey
-                Pinwheel.DLog("[debug] \(request.downloadKey) request hashValue:\(imageView.hashValue)")
+                Loader.DLog("[debug] \(request.downloadKey) request hashValue:\(imageView.hashValue)")
                 if let oldDownloadKey = oldDownloadKeyOpt {
                     let visibles = Array(Static.imageViewState.values.filter { $0 == oldDownloadKey })
                     if visibles.count == 0 {
                         let queuePriority = NSOperationQueuePriority.VeryLow
                         let count = self.updateQueuePriorityByName(oldDownloadKey, queuePriority: queuePriority)
                         if count > 0 {
-                            Pinwheel.DLog("[debug] \(oldDownloadKey) priority down \(count) operations")
+                            Loader.DLog("[debug] \(oldDownloadKey) priority down \(count) operations")
                         }
                     }
                 }
@@ -141,7 +141,7 @@ public class Pinwheel {
                         Static.requests[request.downloadKey] = requests + [request]
                         let count = self.updateQueuePriorityByName(request.downloadKey, queuePriority: queuePriority)
                         if count > 0 {
-                            Pinwheel.DLog("[debug] \(request.downloadKey) priority up \(count) operations")
+                            Loader.DLog("[debug] \(request.downloadKey) priority up \(count) operations")
                         }
                     } else {
                         Static.requests[request.downloadKey] = []
@@ -330,19 +330,19 @@ public class Pinwheel {
             if let data = NSData(contentsOfURL: location) {
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), {
                     // Check UIImage compatible
-                    if let image = Pinwheel.filterAndSaveDisk(self.request, data: data) {
-                        Pinwheel.onSuccess(self.request, image: image, loadedFrom: .Network)
+                    if let image = Loader.filterAndSaveDisk(self.request, data: data) {
+                        Loader.onSuccess(self.request, image: image, loadedFrom: .Network)
                     } else {
-                        Pinwheel.onFailure(self.request, reason: .InvalidData, error: Pinwheel.error("invalid data from network can't convert UIImage."))
-                        Pinwheel.DLog("[error] \(self.request.downloadKey) download failure:Can't convert UIImage")
+                        Loader.onFailure(self.request, reason: .InvalidData, error: Loader.error("invalid data from network can't convert UIImage."))
+                        Loader.DLog("[error] \(self.request.downloadKey) download failure:Can't convert UIImage")
                     }
                     self.operation?.finish()
                     self.operation = nil
                 })
             } else {
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), {
-                    Pinwheel.onFailure(self.request, reason: .InvalidData, error: Pinwheel.error("invalid data from network can't convert NSData."))
-                    Pinwheel.DLog("[error] \(self.request.downloadKey) download failure:Can't convert NSData")
+                    Loader.onFailure(self.request, reason: .InvalidData, error: Loader.error("invalid data from network can't convert NSData."))
+                    Loader.DLog("[error] \(self.request.downloadKey) download failure:Can't convert NSData")
                     self.operation?.cancel()
                     self.operation = nil
                 })
@@ -351,8 +351,8 @@ public class Pinwheel {
 
         func URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError error: NSError?) {
             if let e = error {
-                Pinwheel.onFailure(request, reason: .NetworkError, error: e)
-                Pinwheel.DLog("[warn] \(request.downloadKey) download failure:\(e.debugDescription)")
+                Loader.onFailure(request, reason: .NetworkError, error: e)
+                Loader.DLog("[warn] \(request.downloadKey) download failure:\(e.debugDescription)")
             }
         }
     }
