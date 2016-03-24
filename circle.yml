@@ -1,6 +1,20 @@
 machine:
   xcode:
     version: "7.3"
+dependencies:
+  override:
+    - brew update || brew update
+    - brew uninstall xctool && brew install --HEAD xctool
+    - >
+      which carthage;
+      if [ $? -eq "0" ]; then
+        brew outdated carthage || brew upgrade carthage
+      else
+        brew install carthage
+      fi
+    - carthage version
+    - carthage bootstrap --verbose:
+        timeout: 300
 test:
   override:
     - xctool -project Pinwheel.xcodeproj -scheme PinwheelTests -sdk iphonesimulator -configuration Release build test

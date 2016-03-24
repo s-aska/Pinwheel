@@ -14,7 +14,7 @@ class PinwheelTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        Pinwheel.setup(Pinwheel.Configuration.Builder().debug().build())
+        ImageLoader.setup(Configuration.Builder().debug().build())
     }
 
     override func tearDown() {
@@ -23,7 +23,7 @@ class PinwheelTests: XCTestCase {
     }
 
     func testConfiguration() {
-        let config = Pinwheel.Configuration.Builder()
+        let config = Configuration.Builder()
             .maxConcurrent(6)
             .defaultQueuePriority(NSOperationQueuePriority.VeryHigh)
             .defaultTimeoutIntervalForRequest(8)
@@ -37,7 +37,7 @@ class PinwheelTests: XCTestCase {
     }
 
     func testDisplayOptions() {
-        let options = Pinwheel.DisplayOptions.Builder()
+        let options = DisplayOptions.Builder()
             .queuePriority(NSOperationQueuePriority.VeryLow)
             .timeoutIntervalForRequest(8)
             .timeoutIntervalForResource(9)
@@ -56,8 +56,23 @@ class PinwheelTests: XCTestCase {
             }
             .build()
 
-        Pinwheel.displayImage(NSURL(), imageView: UIImageView(), options: options)
-        Pinwheel.displayImage(NSURL(string: "http://example.com/")!, imageView: UIImageView(), options: options)
+        class TestListener: ImageLoadingListener {
+            private func onLoadingCancelled(url: NSURL, imageView: UIImageView) {
+                NSLog("onLoadingCancelled: url:\(url.absoluteString)")
+            }
+            private func onLoadingComplete(url: NSURL, imageView: UIImageView, image: UIImage, loadedFrom: LoadedFrom) {
+                NSLog("onLoadingComplete: url:\(url.absoluteString)")
+            }
+            private func onLoadingFailed(url: NSURL, imageView: UIImageView, reason: FailureReason) {
+                NSLog("onLoadingFailed: url:\(url.absoluteString)")
+            }
+            private func onLoadingStarted(url: NSURL, imageView: UIImageView) {
+                NSLog("onLoadingStarted: url:\(url.absoluteString)")
+            }
+        }
+        
+        ImageLoader.displayImage(NSURL(), imageView: UIImageView(), options: options, loadingListener: TestListener())
+        ImageLoader.displayImage(NSURL(string: "http://example.com/")!, imageView: UIImageView(), options: options, loadingListener: TestListener())
 
         XCTAssertEqual(options.queuePriority!, NSOperationQueuePriority.VeryLow)
         XCTAssertEqual(options.timeoutIntervalForRequest!, 8)
@@ -65,7 +80,7 @@ class PinwheelTests: XCTestCase {
     }
 
     func testDiskCache() {
-        let diskCache = Pinwheel.DiskCache.sharedInstance()
+        let diskCache = DiskCache.sharedInstance()
         diskCache.cacheSize(10 * 1024)
 
         let saveData = "testDiskCache".dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)!
@@ -92,7 +107,7 @@ class PinwheelTests: XCTestCase {
         // This is an example of a performance test case.
         self.measureBlock() {
             // Put the code you want to measure the time of here.
-            Pinwheel.DiskCache.sharedInstance().pathForKey("https://pbs.twimg.com/profile_images/540166094875406336/_HVCLxmn_reasonably_small.jpeg")
+            DiskCache.sharedInstance().pathForKey("https://pbs.twimg.com/profile_images/540166094875406336/_HVCLxmn_reasonably_small.jpeg")
             return
         }
     }

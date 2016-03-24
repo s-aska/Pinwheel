@@ -1,5 +1,5 @@
 //
-//  Pinwheel.swift
+//  Loader.swift
 //  Pinwheel
 //
 //  Created by Shinichiro Aska on 12/15/16.
@@ -8,40 +8,44 @@
 
 import UIKit
 
-public class Pinwheel {
+public enum LoadedFrom {
+    case Memory
+    case Disk
+    case Network
+}
+
+public enum FailureReason {
+    case EmptyUri
+    case InvalidData
+    case NetworkError
+}
+
+public enum Hook {
+    case BeforeDisk
+    case BeforeMemory
+}
+
+public class ImageLoader {
 
     // MARK: - Types
-
-    public enum LoadedFrom {
-        case Memory
-        case Disk
-        case Network
-    }
-
-    public enum FailureReason {
-        case EmptyUri
-        case InvalidData
-        case NetworkError
-    }
-
-    public enum Hook {
-        case BeforeDisk
-        case BeforeMemory
-    }
 
     struct Static {
         private static let serial = dispatch_queue_create("pw.aska.pinwheel.serial", DISPATCH_QUEUE_SERIAL)
         private static var defaultDisplayImageOptions: DisplayOptions = DisplayOptions.Builder().build()
         private static var imageViewState = [Int: String]()
-        private static let queue = NSOperationQueue()
         private static var requests = [String: [Request]]()
         private static var config = Configuration.Builder().build()
+        private static let downloadQueue = NSOperationQueue()
         private static let displayQueue = NSOperationQueue()
     }
 
     public class var suspend: Bool {
         get { return Static.displayQueue.suspended }
         set { Static.displayQueue.suspended = newValue }
+    }
+
+    public class var isDebug: Bool {
+        get { return Static.config.isDebug }
     }
 
     // MARK: - Request
@@ -53,14 +57,23 @@ public class Pinwheel {
         let downloadKey: String
         let diskCaheKey: String
         let memoryCaheKey: String
+        let loadingListener: ImageLoadingListener?
+        let loadingProgressListener: ImageLoadingProgressListener?
 
-        init(url: NSURL, key: String, imageView: UIImageView, options: DisplayOptions) {
+        init(url: NSURL,
+             key: String,
+             imageView: UIImageView,
+             options: DisplayOptions,
+             loadingListener: ImageLoadingListener?,
+             loadingProgressListener: ImageLoadingProgressListener?) {
             self.url = url
             self.imageView = imageView
             self.options = options
             self.downloadKey = key
             self.diskCaheKey = ([key] + options.beforeDiskFilters.map { $0.cacheKey() }).joinWithSeparator("\t")
             self.memoryCaheKey = ([diskCaheKey] + options.beforeMemoryFilters.map { $0.cacheKey() }).joinWithSeparator("\t")
+            self.loadingListener = loadingListener
+            self.loadingProgressListener = loadingProgressListener
         }
 
         func display(image: UIImage, loadedFrom: LoadedFrom) {
@@ -70,7 +83,7 @@ public class Pinwheel {
                         dispatch_async(dispatch_get_main_queue(), {
                             self.options.displayer.display(image, imageView: self.imageView, loadedFrom: loadedFrom)
                             op.finish()
-                            Pinwheel.DLog("[debug] \(self.downloadKey) display hashValue:\(self.imageView.hashValue)")
+                            Logger.log("[debug] \(self.downloadKey) display hashValue:\(self.imageView.hashValue)")
                         })
                     } else {
                         op.finish()
@@ -88,29 +101,30 @@ public class Pinwheel {
 
     public class func setup(config: Configuration) {
         Static.config = config
-        Static.queue.maxConcurrentOperationCount = config.maxConcurrent
+        Static.downloadQueue.maxConcurrentOperationCount = config.maxConcurrent
         Static.displayQueue.maxConcurrentOperationCount = config.maxConcurrent
     }
 
-    public class func displayImage(url: NSURL, imageView: UIImageView) {
-        self.displayImage(url, imageView: imageView, options: Static.defaultDisplayImageOptions)
-    }
-
-    public class func displayImage(url: NSURL, imageView: UIImageView, options: DisplayOptions) {
+    public class func displayImage(url: NSURL,
+                                   imageView: UIImageView,
+                                   options: DisplayOptions = Static.defaultDisplayImageOptions,
+                                   loadingListener: ImageLoadingListener? = nil,
+                                   loadingProgressListener: ImageLoadingProgressListener? = nil) {
         let key = url.absoluteString
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), { ()->() in
-            let request = Request(url: url, key: key, imageView: imageView, options: options)
+            let request = Request(url: url, key: key, imageView: imageView, options: options,
+                loadingListener: loadingListener, loadingProgressListener: loadingProgressListener)
             dispatch_sync(Static.serial) {
                 let oldDownloadKeyOpt = Static.imageViewState[imageView.hashValue]
                 Static.imageViewState[imageView.hashValue] = request.downloadKey
-                Pinwheel.DLog("[debug] \(request.downloadKey) request hashValue:\(imageView.hashValue)")
+                Logger.log("[debug] \(request.downloadKey) request hashValue:\(imageView.hashValue)")
                 if let oldDownloadKey = oldDownloadKeyOpt {
                     let visibles = Array(Static.imageViewState.values.filter { $0 == oldDownloadKey })
                     if visibles.count == 0 {
                         let queuePriority = NSOperationQueuePriority.VeryLow
                         let count = self.updateQueuePriorityByName(oldDownloadKey, queuePriority: queuePriority)
                         if count > 0 {
-                            Pinwheel.DLog("[debug] \(oldDownloadKey) priority down \(count) operations")
+                            Logger.log("[debug] \(oldDownloadKey) priority down \(count) operations")
                         }
                     }
                 }
@@ -141,14 +155,14 @@ public class Pinwheel {
                         Static.requests[request.downloadKey] = requests + [request]
                         let count = self.updateQueuePriorityByName(request.downloadKey, queuePriority: queuePriority)
                         if count > 0 {
-                            Pinwheel.DLog("[debug] \(request.downloadKey) priority up \(count) operations")
+                            Logger.log("[debug] \(request.downloadKey) priority up \(count) operations")
                         }
                     } else {
                         Static.requests[request.downloadKey] = []
                         let task = DownloadTask(request)
                         if let operation = task.operation {
                             operation.queuePriority = queuePriority
-                            Static.queue.addOperation(operation) // Download from Network
+                            Static.downloadQueue.addOperation(operation) // Download from Network
                         }
                     }
                 }
@@ -160,21 +174,13 @@ public class Pinwheel {
 
     class func updateQueuePriorityByName(name: String, queuePriority: NSOperationQueuePriority) -> Int {
         var count = 0
-        for operation in Static.queue.operations as? [Pinwheel.DownloadOperation] ?? [] {
+        for operation in Static.downloadQueue.operations as? [DownloadOperation] ?? [] {
             if operation.name == name && operation.queuePriority != queuePriority {
                 operation.queuePriority = queuePriority
                 count += 1
             }
         }
         return count
-    }
-
-    // MARK: - Logger
-
-    class func DLog(message: String, function: String = #function) {
-        if Static.config.isDebug {
-            NSLog(message)
-        }
     }
 
     // MARK: - Filter
@@ -222,6 +228,7 @@ public class Pinwheel {
 
             if Static.imageViewState[request.imageView.hashValue] == request.downloadKey {
                 request.display(image, loadedFrom: loadedFrom)
+                request.loadingListener?.onLoadingComplete(request.url, imageView: request.imageView, image: image, loadedFrom: loadedFrom)
                 displayViews += 1
             }
 
@@ -235,6 +242,7 @@ public class Pinwheel {
                 for stack in stacks {
                     if stack.memoryCaheKey == request.memoryCaheKey {
                         stack.display(image, loadedFrom: loadedFrom)
+                        stack.loadingListener?.onLoadingComplete(stack.url, imageView: stack.imageView, image: image, loadedFrom: loadedFrom)
                         displayViews += 1
                     } else if stackGroup[stack.memoryCaheKey] != nil {
                         stackGroup[stack.memoryCaheKey]?.append(stack)
@@ -256,6 +264,7 @@ public class Pinwheel {
                                 isFirst = false
                             }
                             stackInGroup.display(image, loadedFrom: loadedFrom)
+                            stackInGroup.loadingListener?.onLoadingComplete(stackInGroup.url, imageView: stackInGroup.imageView, image: image, loadedFrom: loadedFrom)
                             displayViews += 1
                         }
                     }
@@ -263,7 +272,7 @@ public class Pinwheel {
             }
         }
 
-        DLog("[debug] \(request.downloadKey) views:\(displayViews) groups:\(displayViewGroups) queue:\(Static.queue.operationCount)")
+        Logger.log("[debug] \(request.downloadKey) views:\(displayViews) groups:\(displayViewGroups) downloadQueue:\(Static.downloadQueue.operationCount)")
     }
 
     class func onFailure(request: Request, reason: FailureReason, error: NSError) {
@@ -273,6 +282,7 @@ public class Pinwheel {
                 if let failure = request.options.failure {
                     dispatch_async(dispatch_get_main_queue(), {
                         failure(request.imageView, reason, error, request.url)
+                        request.loadingListener?.onLoadingFailed(request.url, imageView: request.imageView, reason: reason)
                     })
                 }
             }
@@ -284,14 +294,31 @@ public class Pinwheel {
                         if let failure = stack.options.failure {
                             dispatch_async(dispatch_get_main_queue(), {
                                 failure(stack.imageView, reason, error, stack.url)
+                                stack.loadingListener?.onLoadingFailed(stack.url, imageView: stack.imageView, reason: reason)
                             })
                         }
                     }
                 }
             }
         }
+    }
 
-        // FIXME: implements showImageOnFail.
+    class func onCancel(request: Request) {
+        dispatch_sync(Static.serial) {
+            if Static.imageViewState[request.imageView.hashValue] == request.downloadKey {
+                Static.imageViewState.removeValueForKey(request.imageView.hashValue)
+                request.loadingListener?.onLoadingCancelled(request.url, imageView: request.imageView)
+            }
+
+            if let stacks = Static.requests.removeValueForKey(request.downloadKey) {
+                for stack in stacks {
+                    if Static.imageViewState[stack.imageView.hashValue] == request.downloadKey {
+                        Static.imageViewState.removeValueForKey(stack.imageView.hashValue)
+                        stack.loadingListener?.onLoadingCancelled(request.url, imageView: request.imageView)
+                    }
+                }
+            }
+        }
     }
 
     class func error(description: String) -> NSError {
@@ -301,7 +328,7 @@ public class Pinwheel {
 
     // MARK: - NSURLSessionDownloadDelegate
 
-    class DownloadTask: NSObject, NSURLSessionDownloadDelegate {
+    class DownloadTask: NSObject, NSURLSessionDownloadDelegate, DownlaodListener {
 
         let request: Request
         var operation: DownloadOperation?
@@ -323,26 +350,38 @@ public class Pinwheel {
 
             let session = NSURLSession(configuration: config, delegate: self, delegateQueue: nil)
 
-            operation = DownloadOperation(task: session.downloadTaskWithRequest(request.build), name: request.downloadKey)
+            operation = DownloadOperation(task: session.downloadTaskWithRequest(request.build), name: request.downloadKey, listener: self)
+        }
+
+        func onStart() {
+            request.loadingListener?.onLoadingStarted(request.url, imageView: request.imageView)
+        }
+
+        func onCancel() {
+            ImageLoader.onCancel(request)
+        }
+
+        func URLSession(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
+            request.loadingProgressListener?.onProgressUpdate(request.url, imageView: request.imageView, current: totalBytesWritten, total: totalBytesExpectedToWrite)
         }
 
         func URLSession(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, didFinishDownloadingToURL location: NSURL) {
             if let data = NSData(contentsOfURL: location) {
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), {
                     // Check UIImage compatible
-                    if let image = Pinwheel.filterAndSaveDisk(self.request, data: data) {
-                        Pinwheel.onSuccess(self.request, image: image, loadedFrom: .Network)
+                    if let image = ImageLoader.filterAndSaveDisk(self.request, data: data) {
+                        ImageLoader.onSuccess(self.request, image: image, loadedFrom: .Network)
                     } else {
-                        Pinwheel.onFailure(self.request, reason: .InvalidData, error: Pinwheel.error("invalid data from network can't convert UIImage."))
-                        Pinwheel.DLog("[error] \(self.request.downloadKey) download failure:Can't convert UIImage")
+                        ImageLoader.onFailure(self.request, reason: .InvalidData, error: ImageLoader.error("invalid data from network can't convert UIImage."))
+                        Logger.log("[error] \(self.request.downloadKey) download failure:Can't convert UIImage")
                     }
                     self.operation?.finish()
                     self.operation = nil
                 })
             } else {
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), {
-                    Pinwheel.onFailure(self.request, reason: .InvalidData, error: Pinwheel.error("invalid data from network can't convert NSData."))
-                    Pinwheel.DLog("[error] \(self.request.downloadKey) download failure:Can't convert NSData")
+                    ImageLoader.onFailure(self.request, reason: .InvalidData, error: ImageLoader.error("invalid data from network can't convert NSData."))
+                    Logger.log("[error] \(self.request.downloadKey) download failure:Can't convert NSData")
                     self.operation?.cancel()
                     self.operation = nil
                 })
@@ -351,8 +390,8 @@ public class Pinwheel {
 
         func URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError error: NSError?) {
             if let e = error {
-                Pinwheel.onFailure(request, reason: .NetworkError, error: e)
-                Pinwheel.DLog("[warn] \(request.downloadKey) download failure:\(e.debugDescription)")
+                ImageLoader.onFailure(request, reason: .NetworkError, error: e)
+                Logger.log("[warn] \(request.downloadKey) download failure:\(e.debugDescription)")
             }
         }
     }
