@@ -1,5 +1,5 @@
 //
-//  PinwheelProtocol.swift
+//  Protocol.swift
 //  Pinwheel
 //
 //  Created by Shinichiro Aska on 12/15/16.
@@ -8,7 +8,7 @@
 
 import UIKit
 
-public protocol PinwheelDiskCacheProtocol {
+public protocol DiskCacheProtocol {
 
     func get(key: String) -> NSData?
 
@@ -17,26 +17,26 @@ public protocol PinwheelDiskCacheProtocol {
     func remove(key: String)
 }
 
-public protocol PinwheelMemoryCacheProtocol {
+public protocol MemoryCacheProtocol {
 
     func get(key: String) -> UIImage?
 
     func set(key: String, image: UIImage)
 }
 
-public protocol PinwheelFilter {
+public protocol Filter {
 
     func filter(image: UIImage) -> UIImage
 
     func cacheKey() -> String
 }
 
-public protocol PinwheelDisplayer {
+public protocol Displayer {
 
-    func display(image: UIImage, imageView: UIImageView, loadedFrom: Pinwheel.LoadedFrom)
+    func display(image: UIImage, imageView: UIImageView, loadedFrom: LoadedFrom)
 }
 
-public protocol PinwheelRequestBuilder {
+public protocol RequestBuilder {
 
     func build(URL: NSURL) -> NSURLRequest
 }

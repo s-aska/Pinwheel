@@ -8,26 +8,26 @@
 
 import UIKit
 
+public enum LoadedFrom {
+    case Memory
+    case Disk
+    case Network
+}
+
+public enum FailureReason {
+    case EmptyUri
+    case InvalidData
+    case NetworkError
+}
+
+public enum Hook {
+    case BeforeDisk
+    case BeforeMemory
+}
+
 public class Pinwheel {
 
     // MARK: - Types
-
-    public enum LoadedFrom {
-        case Memory
-        case Disk
-        case Network
-    }
-
-    public enum FailureReason {
-        case EmptyUri
-        case InvalidData
-        case NetworkError
-    }
-
-    public enum Hook {
-        case BeforeDisk
-        case BeforeMemory
-    }
 
     struct Static {
         private static let serial = dispatch_queue_create("pw.aska.pinwheel.serial", DISPATCH_QUEUE_SERIAL)
@@ -160,7 +160,7 @@ public class Pinwheel {
 
     class func updateQueuePriorityByName(name: String, queuePriority: NSOperationQueuePriority) -> Int {
         var count = 0
-        for operation in Static.queue.operations as? [Pinwheel.DownloadOperation] ?? [] {
+        for operation in Static.queue.operations as? [DownloadOperation] ?? [] {
             if operation.name == name && operation.queuePriority != queuePriority {
                 operation.queuePriority = queuePriority
                 count += 1
