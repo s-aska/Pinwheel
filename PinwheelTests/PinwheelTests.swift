@@ -184,7 +184,7 @@ class PinwheelTests: XCTestCase {
             }
             .build()
 
-        ImageLoader.displayImage(getTestURL("/index.html"), imageView: UIImageView(), options: options)
+        ImageLoader.displayImage(getTestURL("/index.html?testDisplayOptionsInvalidData"), imageView: UIImageView(), options: options)
 
         self.waitForExpectationsWithTimeout(3, handler: nil)
     }
@@ -299,7 +299,7 @@ class PinwheelTests: XCTestCase {
     }
 
     func testListenerForInvalidContentType() {
-        let path = "/index.html"
+        let path = "/index.html?testListenerForInvalidContentType"
 
         let listener = TestListener()
         listener.startedExpectation = self.expectationWithDescription(path + " started")
