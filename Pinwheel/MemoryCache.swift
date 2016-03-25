@@ -8,21 +8,25 @@
 
 import UIKit
 
-class MemoryCache: MemoryCacheProtocol {
+public class MemoryCache: MemoryCacheProtocol {
 
     struct Static {
         static let instance = MemoryCache()
     }
 
-    class func sharedInstance() -> MemoryCache { return Static.instance }
+    public class func sharedInstance() -> MemoryCache { return Static.instance }
 
     var cache = NSCache()
 
-    func get(key: String) -> UIImage? {
+    public func get(key: String) -> UIImage? {
         return Static.instance.cache.objectForKey(key) as? UIImage
     }
 
-    func set(key: String, image: UIImage) {
+    public func set(key: String, image: UIImage) {
         Static.instance.cache.setObject(image, forKey: key)
+    }
+
+    public func clear() {
+        Static.instance.cache.removeAllObjects()
     }
 }

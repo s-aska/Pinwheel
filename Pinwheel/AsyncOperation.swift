@@ -55,7 +55,7 @@ class AsyncOperation: NSOperation {
     }
 
     override var cancelled: Bool {
-        return self.state == .Cancelled
+        return state == .Cancelled
     }
 
     override var asynchronous: Bool {
@@ -114,6 +114,7 @@ class DownloadOperation: AsyncOperation {
         state = .Cancelled
         task.cancel()
         listener?.onCancel()
+        finish()
     }
 
     func finish() {

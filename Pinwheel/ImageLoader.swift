@@ -37,6 +37,7 @@ public class ImageLoader {
         private static var config = Configuration.Builder().build()
         private static let downloadQueue = NSOperationQueue()
         private static let displayQueue = NSOperationQueue()
+        private static let requestQueue = NSOperationQueue()
     }
 
     public class var suspend: Bool {
@@ -82,6 +83,7 @@ public class ImageLoader {
                     if Static.imageViewState.removeValueForKey(self.imageView.hashValue) == self.downloadKey {
                         dispatch_async(dispatch_get_main_queue(), {
                             self.options.displayer.display(image, imageView: self.imageView, loadedFrom: loadedFrom)
+                            self.loadingListener?.onLoadingComplete(self.url, imageView: self.imageView, image: image, loadedFrom: loadedFrom)
                             op.finish()
                             Logger.log("[debug] \(self.downloadKey) display hashValue:\(self.imageView.hashValue)")
                         })
@@ -103,6 +105,7 @@ public class ImageLoader {
         Static.config = config
         Static.downloadQueue.maxConcurrentOperationCount = config.maxConcurrent
         Static.displayQueue.maxConcurrentOperationCount = config.maxConcurrent
+        Static.requestQueue.maxConcurrentOperationCount = 1
     }
 
     public class func displayImage(url: NSURL,
@@ -110,8 +113,18 @@ public class ImageLoader {
                                    options: DisplayOptions = Static.defaultDisplayImageOptions,
                                    loadingListener: ImageLoadingListener? = nil,
                                    loadingProgressListener: ImageLoadingProgressListener? = nil) {
-        let key = url.absoluteString
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), { ()->() in
+        Static.requestQueue.addOperation(AsyncBlockOperation({ op in
+            let key = url.absoluteString
+            if key.isEmpty {
+                loadingListener?.onLoadingFailed(url, imageView: imageView, reason: .EmptyUri)
+                if let failure = options.failure {
+                    dispatch_async(dispatch_get_main_queue(), {
+                        failure(imageView, .EmptyUri, ImageLoader.error("empty url."), url)
+                    })
+                }
+                op.finish()
+                return
+            }
             let request = Request(url: url, key: key, imageView: imageView, options: options,
                 loadingListener: loadingListener, loadingProgressListener: loadingProgressListener)
             dispatch_sync(Static.serial) {
@@ -131,18 +144,22 @@ public class ImageLoader {
             }
 
             if let image = options.memoryCache?.get(request.memoryCaheKey) {
-                self.onSuccess(request, image: image, loadedFrom: .Memory)
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), {
+                    self.onSuccess(request, image: image, loadedFrom: .Memory)
+                })
             } else if let data = options.diskCache?.get(request.diskCaheKey) {
-                if let image = UIImage(data: data) {
-                    self.onSuccess(request, image: image, loadedFrom: .Disk)
-                } else {
-                    options.diskCache?.remove(request.diskCaheKey)
-                    if let failure = options.failure {
-                        dispatch_async(dispatch_get_main_queue(), {
-                            failure(imageView, .InvalidData, self.error("invalid data from disk cache key:\(request.diskCaheKey)."), url)
-                        })
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), {
+                    if let image = UIImage(data: data) {
+                        self.onSuccess(request, image: image, loadedFrom: .Disk)
+                    } else {
+                        options.diskCache?.remove(request.diskCaheKey)
+                        if let failure = options.failure {
+                            dispatch_async(dispatch_get_main_queue(), {
+                                failure(imageView, .InvalidData, self.error("invalid data from disk cache key:\(request.diskCaheKey)."), url)
+                            })
+                        }
                     }
-                }
+                })
             } else {
                 if let prepare = options.prepare {
                     dispatch_async(dispatch_get_main_queue(), {
@@ -167,29 +184,37 @@ public class ImageLoader {
                     }
                 }
             }
-        })
+            op.finish()
+        }))
     }
 
     public class func cancelRequest(url: NSURL) {
-        let key = url.absoluteString
-        Static.downloadQueue
-            .operations
-            .filter({ $0.name == key && ($0.ready || $0.executing) })
-            .forEach({ $0.cancel() })
+        Static.requestQueue.addOperation(AsyncBlockOperation({ op in
+            let key = url.absoluteString
+            Static.downloadQueue
+                .operations
+                .filter({ $0.name == key && ($0.ready || $0.executing) })
+                .forEach({ $0.cancel() })
+            op.finish()
+        }))
     }
 
     public class func cancelRequest(imageView: UIImageView) {
-        dispatch_sync(Static.serial) {
-            guard let key = Static.imageViewState[imageView.hashValue] else {
-                return
+        Static.requestQueue.addOperation(AsyncBlockOperation({ op in
+            dispatch_sync(Static.serial) {
+                guard let key = Static.imageViewState[imageView.hashValue] else {
+                    op.finish()
+                    return
+                }
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), {
+                    Static.downloadQueue
+                        .operations
+                        .filter({ $0.name == key && ($0.ready || $0.executing) })
+                        .forEach({ $0.cancel() })
+                    op.finish()
+                })
             }
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), {
-                Static.downloadQueue
-                    .operations
-                    .filter({ $0.name == key && ($0.ready || $0.executing) })
-                    .forEach({ $0.cancel() })
-            })
-        }
+        }))
     }
 
     // MARK: - QueueManager
@@ -250,7 +275,6 @@ public class ImageLoader {
 
             if Static.imageViewState[request.imageView.hashValue] == request.downloadKey {
                 request.display(image, loadedFrom: loadedFrom)
-                request.loadingListener?.onLoadingComplete(request.url, imageView: request.imageView, image: image, loadedFrom: loadedFrom)
                 displayViews += 1
             }
 
@@ -264,7 +288,6 @@ public class ImageLoader {
                 for stack in stacks {
                     if stack.memoryCaheKey == request.memoryCaheKey {
                         stack.display(image, loadedFrom: loadedFrom)
-                        stack.loadingListener?.onLoadingComplete(stack.url, imageView: stack.imageView, image: image, loadedFrom: loadedFrom)
                         displayViews += 1
                     } else if stackGroup[stack.memoryCaheKey] != nil {
                         stackGroup[stack.memoryCaheKey]?.append(stack)
@@ -286,7 +309,6 @@ public class ImageLoader {
                                 isFirst = false
                             }
                             stackInGroup.display(image, loadedFrom: loadedFrom)
-                            stackInGroup.loadingListener?.onLoadingComplete(stackInGroup.url, imageView: stackInGroup.imageView, image: image, loadedFrom: loadedFrom)
                             displayViews += 1
                         }
                     }
@@ -304,7 +326,11 @@ public class ImageLoader {
                 if let failure = request.options.failure {
                     dispatch_async(dispatch_get_main_queue(), {
                         failure(request.imageView, reason, error, request.url)
-                        request.loadingListener?.onLoadingFailed(request.url, imageView: request.imageView, reason: reason)
+                    })
+                }
+                if let loadingListener = request.loadingListener {
+                    dispatch_async(dispatch_get_main_queue(), {
+                        loadingListener.onLoadingFailed(request.url, imageView: request.imageView, reason: reason)
                     })
                 }
             }
@@ -316,7 +342,11 @@ public class ImageLoader {
                         if let failure = stack.options.failure {
                             dispatch_async(dispatch_get_main_queue(), {
                                 failure(stack.imageView, reason, error, stack.url)
-                                stack.loadingListener?.onLoadingFailed(stack.url, imageView: stack.imageView, reason: reason)
+                            })
+                        }
+                        if let loadingListener = stack.loadingListener {
+                            dispatch_async(dispatch_get_main_queue(), {
+                                loadingListener.onLoadingFailed(stack.url, imageView: stack.imageView, reason: reason)
                             })
                         }
                     }
@@ -329,14 +359,18 @@ public class ImageLoader {
         dispatch_sync(Static.serial) {
             if Static.imageViewState[request.imageView.hashValue] == request.downloadKey {
                 Static.imageViewState.removeValueForKey(request.imageView.hashValue)
-                request.loadingListener?.onLoadingCancelled(request.url, imageView: request.imageView)
+                dispatch_async(dispatch_get_main_queue(), {
+                    request.loadingListener?.onLoadingCancelled(request.url, imageView: request.imageView)
+                })
             }
 
             if let stacks = Static.requests.removeValueForKey(request.downloadKey) {
                 for stack in stacks {
                     if Static.imageViewState[stack.imageView.hashValue] == request.downloadKey {
                         Static.imageViewState.removeValueForKey(stack.imageView.hashValue)
-                        stack.loadingListener?.onLoadingCancelled(request.url, imageView: request.imageView)
+                        dispatch_async(dispatch_get_main_queue(), {
+                            stack.loadingListener?.onLoadingCancelled(stack.url, imageView: stack.imageView)
+                        })
                     }
                 }
             }
@@ -367,7 +401,7 @@ public class ImageLoader {
             }
 
             if let timeoutIntervalForResource = request.options.timeoutIntervalForResource ?? Static.config.defaultTimeoutIntervalForResource {
-                config.timeoutIntervalForRequest = timeoutIntervalForResource
+                config.timeoutIntervalForResource = timeoutIntervalForResource
             }
 
             let session = NSURLSession(configuration: config, delegate: self, delegateQueue: nil)
@@ -402,6 +436,7 @@ public class ImageLoader {
                         Logger.log("[error] \(self.request.downloadKey) download failure invalid header Content-Type [\(contentType)]")
                         self.operation?.cancel()
                         self.operation = nil
+                        return
                     }
                 }
             }
@@ -430,7 +465,14 @@ public class ImageLoader {
         func URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError error: NSError?) {
             if let e = error {
                 ImageLoader.onFailure(request, reason: .NetworkError, error: e)
-                Logger.log("[warn] \(request.downloadKey) download failure:\(e.debugDescription)")
+                Logger.log("[warn] \(request.downloadKey) download didCompleteWithError:\(e.debugDescription)")
+            }
+        }
+
+        func URLSession(session: NSURLSession, didBecomeInvalidWithError error: NSError?) {
+            if let e = error {
+                ImageLoader.onFailure(request, reason: .NetworkError, error: e)
+                Logger.log("[warn] \(request.downloadKey) download didBecomeInvalidWithError:\(e.debugDescription)")
             }
         }
     }

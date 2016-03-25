@@ -29,7 +29,7 @@ class TestServer {
 
         server["black.png"] = { request in
             let res = Array(UnsafeBufferPointer(start: UnsafePointer<UInt8>(data.bytes), count: data.length))
-            return HttpResponse.RAW(200, "OK", ["Content-Type": "image/png"], { (writer: HttpResponseBodyWriter) in
+            return HttpResponse.RAW(200, "OK", ["Content-Type": "image/png", "Content-Length": "83"], { (writer: HttpResponseBodyWriter) in
                 writer.write(res)
             })
         }
@@ -39,7 +39,7 @@ class TestServer {
         }
 
         server["large.png"] = { request in
-            sleep(10)
+            sleep(3)
             let res = Array(UnsafeBufferPointer(start: UnsafePointer<UInt8>(data.bytes), count: data.length))
             return HttpResponse.RAW(200, "OK", ["Content-Type": "image/png"], { (writer: HttpResponseBodyWriter) in
                 writer.write(res)
