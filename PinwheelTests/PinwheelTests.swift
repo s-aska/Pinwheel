@@ -307,11 +307,8 @@ class PinwheelTests: XCTestCase {
         listener.failedExpectation = self.expectationWithDescription(path + " failed")
         listener.completeOnFail = true
 
-        let progressListener = TestProgressListener()
-        progressListener.progressExpectation = self.expectationWithDescription(path + " progress")
-
         let options = DisplayOptions.Builder().build()
-        ImageLoader.displayImage(getTestURL(path), imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
+        ImageLoader.displayImage(getTestURL(path), imageView: UIImageView(), options: options, loadingListener: listener)
 
         self.waitForExpectationsWithTimeout(3, handler: nil)
     }
