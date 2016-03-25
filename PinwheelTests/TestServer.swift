@@ -28,9 +28,6 @@ class TestServer {
         }
 
         server["black.png"] = { request in
-            guard request.method == "GET" else {
-                return .BadRequest(.Text("Method must be GET"))
-            }
             let res = Array(UnsafeBufferPointer(start: UnsafePointer<UInt8>(data.bytes), count: data.length))
             return HttpResponse.RAW(200, "OK", ["Content-Type": "image/png"], { (writer: HttpResponseBodyWriter) in
                 writer.write(res)
@@ -38,10 +35,15 @@ class TestServer {
         }
 
         server["index.html"] = { request in
-            guard request.method == "GET" else {
-                return .BadRequest(.Text("Method must be GET"))
-            }
             return .OK(.Html("hello world."))
+        }
+
+        server["large.png"] = { request in
+            sleep(10)
+            let res = Array(UnsafeBufferPointer(start: UnsafePointer<UInt8>(data.bytes), count: data.length))
+            return HttpResponse.RAW(200, "OK", ["Content-Type": "image/png"], { (writer: HttpResponseBodyWriter) in
+                writer.write(res)
+            })
         }
     }
 

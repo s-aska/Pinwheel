@@ -145,6 +145,17 @@ ImageLoader.displayImage(url, imageView: imageView, options: Static.defaultOptio
 ```
 
 
+## Cancel
+
+```swift
+ImageLoader.cancelRequest(url)
+
+// or
+
+ImageLoader.cancelRequest(imageView)
+```
+
+
 ## Requirements
 
 - iOS 8.0+

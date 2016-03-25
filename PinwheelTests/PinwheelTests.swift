@@ -66,6 +66,7 @@ class PinwheelTests: XCTestCase {
         class TestListener: ImageLoadingListener {
             var expectation: XCTestExpectation?
             private func onLoadingCancelled(url: NSURL, imageView: UIImageView) {
+                expectation?.fulfill()
                 NSLog("onLoadingCancelled: url:\(url.absoluteString)")
             }
             private func onLoadingComplete(url: NSURL, imageView: UIImageView, image: UIImage, loadedFrom: LoadedFrom) {
@@ -106,6 +107,21 @@ class PinwheelTests: XCTestCase {
         listener.expectation = self.expectationWithDescription("html")
         ImageLoader.displayImage(NSURL(string: "http://127.0.0.1:" + server.port.description + "/index.html")!, imageView: UIImageView(), options: options,
                                  loadingListener: listener, loadingProgressListener: TestProgressListener())
+        self.waitForExpectationsWithTimeout(3, handler: nil)
+
+        listener.expectation = self.expectationWithDescription("large")
+        ImageLoader.displayImage(NSURL(string: "http://127.0.0.1:" + server.port.description + "/large.png")!, imageView: UIImageView(), options: options,
+                                 loadingListener: listener, loadingProgressListener: TestProgressListener())
+        sleep(1)
+        ImageLoader.cancelRequest(NSURL(string: "http://127.0.0.1:" + server.port.description + "/large.png")!)
+        self.waitForExpectationsWithTimeout(3, handler: nil)
+
+        listener.expectation = self.expectationWithDescription("large")
+        let imageView = UIImageView()
+        ImageLoader.displayImage(NSURL(string: "http://127.0.0.1:" + server.port.description + "/large.png")!, imageView: imageView, options: options,
+                                 loadingListener: listener, loadingProgressListener: TestProgressListener())
+        sleep(1)
+        ImageLoader.cancelRequest(imageView)
         self.waitForExpectationsWithTimeout(3, handler: nil)
 
         XCTAssertEqual(options.queuePriority!, NSOperationQueuePriority.VeryLow)

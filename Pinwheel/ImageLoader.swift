@@ -170,6 +170,28 @@ public class ImageLoader {
         })
     }
 
+    public class func cancelRequest(url: NSURL) {
+        let key = url.absoluteString
+        Static.downloadQueue
+            .operations
+            .filter({ $0.name == key && ($0.ready || $0.executing) })
+            .forEach({ $0.cancel() })
+    }
+
+    public class func cancelRequest(imageView: UIImageView) {
+        dispatch_sync(Static.serial) {
+            guard let key = Static.imageViewState[imageView.hashValue] else {
+                return
+            }
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), {
+                Static.downloadQueue
+                    .operations
+                    .filter({ $0.name == key && ($0.ready || $0.executing) })
+                    .forEach({ $0.cancel() })
+            })
+        }
+    }
+
     // MARK: - QueueManager
 
     class func updateQueuePriorityByName(name: String, queuePriority: NSOperationQueuePriority) -> Int {

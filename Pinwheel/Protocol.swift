@@ -56,7 +56,7 @@ public protocol ImageLoadingProgressListener {
     func onProgressUpdate(url: NSURL, imageView: UIImageView, current: Int64, total: Int64)
 }
 
-public protocol DownlaodListener {
+public protocol DownlaodListener: class {
 
     func onStart()
 
