@@ -230,6 +230,14 @@ public class ImageLoader {
         }))
     }
 
+    public class func dumpDownloadQueue() {
+        Static.downloadQueue.operations.forEach { (op) in
+            if let op = op as? DownloadOperation {
+                NSLog("url:\(op.name ?? "-") state:\(op.state.rawValue)")
+            }
+        }
+    }
+
     // MARK: - QueueManager
 
     class func updateQueuePriorityByName(name: String, queuePriority: NSOperationQueuePriority) -> Int {

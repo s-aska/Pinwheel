@@ -53,7 +53,9 @@ class ImageLoaderTests: XCTestCase {
         let options = DisplayOptions.Builder().build()
         ImageLoader.displayImage(getTestURL(path), imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
 
-        waitForExpectationsWithTimeout(5, handler: nil)
+        waitForExpectationsWithTimeout(3) { error in
+            ImageLoader.dumpDownloadQueue()
+        }
     }
 
     func testListenerForInvalidURL() {
@@ -69,7 +71,9 @@ class ImageLoaderTests: XCTestCase {
         let options = DisplayOptions.Builder().build()
         ImageLoader.displayImage(NSURL(), imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
 
-        waitForExpectationsWithTimeout(3, handler: nil)
+        waitForExpectationsWithTimeout(3) { error in
+            ImageLoader.dumpDownloadQueue()
+        }
     }
 
     func testListenerForNotFoundURL() {
@@ -87,7 +91,9 @@ class ImageLoaderTests: XCTestCase {
         let options = DisplayOptions.Builder().build()
         ImageLoader.displayImage(getTestURL(path), imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
 
-        waitForExpectationsWithTimeout(3, handler: nil)
+        waitForExpectationsWithTimeout(3) { error in
+            ImageLoader.dumpDownloadQueue()
+        }
     }
 
     func testListenerForInvalidContentType() {
@@ -102,7 +108,9 @@ class ImageLoaderTests: XCTestCase {
         let options = DisplayOptions.Builder().build()
         ImageLoader.displayImage(getTestURL(path), imageView: UIImageView(), options: options, loadingListener: listener)
 
-        waitForExpectationsWithTimeout(3, handler: nil)
+        waitForExpectationsWithTimeout(3) { error in
+            ImageLoader.dumpDownloadQueue()
+        }
     }
 
 
