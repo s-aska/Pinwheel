@@ -117,7 +117,9 @@ class DownloadOperation: AsyncOperation {
     }
 
     func finish() {
-        state = .Finished
+        if state != .Finished {
+            state = .Finished
+        }
     }
 
 }

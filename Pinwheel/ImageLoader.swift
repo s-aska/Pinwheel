@@ -484,9 +484,11 @@ public class ImageLoader {
                 if e.localizedDescription == "cancelled" {
                     ImageLoader.onCancel(request)
                     Logger.log("[warn] \(request.downloadKey) download canceled didCompleteWithError:\(e.debugDescription)")
+                    operation?.finish()
                 } else {
                     ImageLoader.onFailure(request, reason: .NetworkError, error: e)
                     Logger.log("[warn] \(request.downloadKey) download failed didCompleteWithError:\(e.debugDescription)")
+                    operation?.finish()
                 }
             }
         }
@@ -496,9 +498,11 @@ public class ImageLoader {
                 if e.localizedDescription == "cancelled" {
                     ImageLoader.onCancel(request)
                     Logger.log("[warn] \(request.downloadKey) download canceled didBecomeInvalidWithError:\(e.debugDescription)")
+                    operation?.finish()
                 } else {
                     ImageLoader.onFailure(request, reason: .NetworkError, error: e)
                     Logger.log("[warn] \(request.downloadKey) download failed didBecomeInvalidWithError:\(e.debugDescription)")
+                    operation?.finish()
                 }
             }
         }
