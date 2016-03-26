@@ -19,6 +19,7 @@ class ImageLoaderTests: XCTestCase {
         DiskCache.sharedInstance().clear()
         MemoryCache.sharedInstance().clear()
         ImageLoader.setup(Configuration.Builder().debug().build())
+        ImageLoader.dumpDownloadQueue()
         do {
             try self.server.start(11452)
         } catch {

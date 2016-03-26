@@ -16,7 +16,10 @@ class DisplayOptionsTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        DiskCache.sharedInstance().clear()
+        MemoryCache.sharedInstance().clear()
         ImageLoader.setup(Configuration.Builder().debug().build())
+        ImageLoader.dumpDownloadQueue()
         do {
             try self.server.start(11451)
         } catch {
