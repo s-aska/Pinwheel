@@ -18,7 +18,7 @@ class DisplayOptionsTests: XCTestCase {
         super.setUp()
         ImageLoader.setup(Configuration.Builder().debug().build())
         do {
-            try self.server.start()
+            try self.server.start(11451)
         } catch {
             XCTFail("Failed to start server")
         }
@@ -30,7 +30,7 @@ class DisplayOptionsTests: XCTestCase {
     }
 
     func getTestURL(path: String) -> NSURL {
-        guard let url = NSURL(string: "http://127.0.0.1:" + self.server.port.description + path) else {
+        guard let url = NSURL(string: "http://127.0.0.1:11451" + path) else {
             fatalError("Failed to getURL")
         }
         return url

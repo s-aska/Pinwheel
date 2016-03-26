@@ -10,58 +10,7 @@ import UIKit
 import XCTest
 import Pinwheel
 
-class TestListener: ImageLoadingListener {
-    weak var startedExpectation: XCTestExpectation?
-    weak var cancelExpectation: XCTestExpectation?
-    weak var failedExpectation: XCTestExpectation?
-    weak var completeExpectation: XCTestExpectation?
-    var startedOnFail = false
-    var cancelOnFail = false
-    var failedOnFail = false
-    var completeOnFail = false
-    internal func onLoadingStarted(url: NSURL, imageView: UIImageView) {
-        startedExpectation?.fulfill()
-        if startedOnFail {
-            XCTFail("onLoadingStarted")
-        }
-        NSLog("Pinwheel [debug] onLoadingStarted: url:\(url.absoluteString)")
-    }
-    internal func onLoadingCancelled(url: NSURL, imageView: UIImageView) {
-        cancelExpectation?.fulfill()
-        if cancelOnFail {
-            XCTFail("onLoadingCancelled")
-        }
-        NSLog("Pinwheel [debug] onLoadingCancelled: url:\(url.absoluteString)")
-    }
-    internal func onLoadingFailed(url: NSURL, imageView: UIImageView, reason: FailureReason) {
-        failedExpectation?.fulfill()
-        if failedOnFail {
-            XCTFail("onLoadingFailed")
-        }
-        NSLog("Pinwheel [debug] onLoadingFailed: url:\(url.absoluteString)")
-    }
-    internal func onLoadingComplete(url: NSURL, imageView: UIImageView, image: UIImage, loadedFrom: LoadedFrom) {
-        completeExpectation?.fulfill()
-        if completeOnFail {
-            XCTFail("onLoadingComplete")
-        }
-        NSLog("Pinwheel [debug] onLoadingComplete: url:\(url.absoluteString)")
-    }
-}
-
-class TestProgressListener: ImageLoadingProgressListener {
-    var progressExpectation: XCTestExpectation?
-    var progressOnFail = false
-    internal func onProgressUpdate(url: NSURL, imageView: UIImageView, current: Int64, total: Int64) {
-        progressExpectation?.fulfill()
-        if progressOnFail {
-            XCTFail("onProgressUpdate")
-        }
-        NSLog("Pinwheel [debug] onProgressUpdate: url:\(url.absoluteString) \(current)/\(total)")
-    }
-}
-
-class PinwheelTests: XCTestCase {
+class ImageLoaderTests: XCTestCase {
 
     let server = TestServer()
 
@@ -71,7 +20,7 @@ class PinwheelTests: XCTestCase {
         MemoryCache.sharedInstance().clear()
         ImageLoader.setup(Configuration.Builder().debug().build())
         do {
-            try self.server.start()
+            try self.server.start(11452)
         } catch {
             XCTFail("Failed to start server")
         }
@@ -83,7 +32,7 @@ class PinwheelTests: XCTestCase {
     }
 
     func getTestURL(path: String) -> NSURL {
-        guard let url = NSURL(string: "http://127.0.0.1:" + self.server.port.description + path) else {
+        guard let url = NSURL(string: "http://127.0.0.1:11452" + path) else {
             fatalError("Failed to getURL")
         }
         return url
@@ -156,44 +105,5 @@ class PinwheelTests: XCTestCase {
         waitForExpectationsWithTimeout(3, handler: nil)
     }
 
-    func testListenerForCancelByURL() {
-        let path = "/large.png"
 
-        let listener = TestListener()
-        listener.startedExpectation = expectationWithDescription(path + " started")
-        listener.cancelExpectation = expectationWithDescription(path + " cancel")
-        listener.failedOnFail = true
-        listener.completeOnFail = true
-
-        let progressListener = TestProgressListener()
-        progressListener.progressOnFail = true
-
-        let options = DisplayOptions.Builder().build()
-        ImageLoader.displayImage(getTestURL(path), imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
-
-        ImageLoader.cancelRequest(getTestURL(path))
-
-        waitForExpectationsWithTimeout(3, handler: nil)
-    }
-
-    func testListenerForCancelByUIImageView() {
-        let path = "/large.png"
-        let imageView = UIImageView()
-
-        let listener = TestListener()
-        listener.startedExpectation = expectationWithDescription(path + " started")
-        listener.cancelExpectation = expectationWithDescription(path + " cancel")
-        listener.failedOnFail = true
-        listener.completeOnFail = true
-
-        let progressListener = TestProgressListener()
-        progressListener.progressOnFail = true
-
-        let options = DisplayOptions.Builder().build()
-        ImageLoader.displayImage(getTestURL(path), imageView: imageView, options: options, loadingListener: listener, loadingProgressListener: progressListener)
-
-        ImageLoader.cancelRequest(imageView)
-
-        waitForExpectationsWithTimeout(3, handler: nil)
-    }
 }

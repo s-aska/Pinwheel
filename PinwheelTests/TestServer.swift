@@ -11,7 +11,6 @@ import Swifter
 
 class TestServer {
     let server: HttpServer
-    let port: in_port_t = 14514
 
     init() {
         server = HttpServer()
@@ -47,7 +46,7 @@ class TestServer {
         }
     }
 
-    func start() throws {
+    func start(port: in_port_t) throws {
         try server.start(port)
     }
 
