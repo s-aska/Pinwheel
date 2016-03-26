@@ -113,7 +113,6 @@ class DownloadOperation: AsyncOperation {
         super.cancel()
         state = .Cancelled
         task.cancel()
-        listener?.onCancel()
         finish()
     }
 

@@ -37,7 +37,11 @@ public class ImageLoader {
         private static var config = Configuration.Builder().build()
         private static let downloadQueue = NSOperationQueue()
         private static let displayQueue = NSOperationQueue()
-        private static let requestQueue = NSOperationQueue()
+        private static let requestQueue: NSOperationQueue = {
+            let queue = NSOperationQueue()
+            queue.maxConcurrentOperationCount = 1
+            return queue
+        }()
     }
 
     public class var suspend: Bool {
@@ -105,7 +109,6 @@ public class ImageLoader {
         Static.config = config
         Static.downloadQueue.maxConcurrentOperationCount = config.maxConcurrent
         Static.displayQueue.maxConcurrentOperationCount = config.maxConcurrent
-        Static.requestQueue.maxConcurrentOperationCount = 1
     }
 
     public class func displayImage(url: NSURL,
@@ -423,10 +426,6 @@ public class ImageLoader {
             request.loadingListener?.onLoadingStarted(request.url, imageView: request.imageView)
         }
 
-        func onCancel() {
-            ImageLoader.onCancel(request)
-        }
-
         func URLSession(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
             request.loadingProgressListener?.onProgressUpdate(request.url, imageView: request.imageView, current: totalBytesWritten, total: totalBytesExpectedToWrite)
         }
@@ -474,15 +473,25 @@ public class ImageLoader {
 
         func URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError error: NSError?) {
             if let e = error {
-                ImageLoader.onFailure(request, reason: .NetworkError, error: e)
-                Logger.log("[warn] \(request.downloadKey) download didCompleteWithError:\(e.debugDescription)")
+                if e.localizedDescription == "cancelled" {
+                    ImageLoader.onCancel(request)
+                    Logger.log("[warn] \(request.downloadKey) download canceled didCompleteWithError:\(e.debugDescription)")
+                } else {
+                    ImageLoader.onFailure(request, reason: .NetworkError, error: e)
+                    Logger.log("[warn] \(request.downloadKey) download failed didCompleteWithError:\(e.debugDescription)")
+                }
             }
         }
 
         func URLSession(session: NSURLSession, didBecomeInvalidWithError error: NSError?) {
             if let e = error {
-                ImageLoader.onFailure(request, reason: .NetworkError, error: e)
-                Logger.log("[warn] \(request.downloadKey) download didBecomeInvalidWithError:\(e.debugDescription)")
+                if e.localizedDescription == "cancelled" {
+                    ImageLoader.onCancel(request)
+                    Logger.log("[warn] \(request.downloadKey) download canceled didBecomeInvalidWithError:\(e.debugDescription)")
+                } else {
+                    ImageLoader.onFailure(request, reason: .NetworkError, error: e)
+                    Logger.log("[warn] \(request.downloadKey) download failed didBecomeInvalidWithError:\(e.debugDescription)")
+                }
             }
         }
     }

@@ -13,7 +13,7 @@
 		389F37DF1CA417C80044A424 /* CryptoSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 389F37D71CA3FBC30044A424 /* CryptoSwift.framework */; };
 		389F37E11CA418B70044A424 /* CryptoSwift.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 389F37D71CA3FBC30044A424 /* CryptoSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		38E82B4E1A40747C00EFDC81 /* Pinwheel.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 38E82B421A40747C00EFDC81 /* Pinwheel.framework */; };
-		38E82B551A40747C00EFDC81 /* PinwheelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38E82B541A40747C00EFDC81 /* PinwheelTests.swift */; };
+		38E82B551A40747C00EFDC81 /* ImageLoaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38E82B541A40747C00EFDC81 /* ImageLoaderTests.swift */; };
 		38E82B611A40760F00EFDC81 /* DisplayOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38E82B601A40760F00EFDC81 /* DisplayOptions.swift */; };
 		38E82B631A40761D00EFDC81 /* AsyncOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38E82B621A40761D00EFDC81 /* AsyncOperation.swift */; };
 		38E82B671A40763700EFDC81 /* DiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38E82B661A40763700EFDC81 /* DiskCache.swift */; };
@@ -25,6 +25,9 @@
 		6A5A0CAC1CA4439F0075198F /* TestServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5A0CAB1CA4439F0075198F /* TestServer.swift */; };
 		6A5A0CAE1CA445890075198F /* Swifter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A5A0CAD1CA445890075198F /* Swifter.framework */; };
 		6A5A0CAF1CA445970075198F /* Swifter.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6A5A0CAD1CA445890075198F /* Swifter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		6A5A0CB11CA652030075198F /* ConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5A0CB01CA652030075198F /* ConfigurationTests.swift */; };
+		6A5A0CB31CA653BB0075198F /* DisplayOptionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5A0CB21CA653BB0075198F /* DisplayOptionsTests.swift */; };
+		6A5A0CB51CA65B130075198F /* DiskCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5A0CB41CA65B130075198F /* DiskCacheTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,7 +62,7 @@
 		38E82B461A40747C00EFDC81 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		38E82B4D1A40747C00EFDC81 /* PinwheelTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PinwheelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		38E82B531A40747C00EFDC81 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		38E82B541A40747C00EFDC81 /* PinwheelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinwheelTests.swift; sourceTree = "<group>"; };
+		38E82B541A40747C00EFDC81 /* ImageLoaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoaderTests.swift; sourceTree = "<group>"; };
 		38E82B601A40760F00EFDC81 /* DisplayOptions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DisplayOptions.swift; sourceTree = "<group>"; };
 		38E82B621A40761D00EFDC81 /* AsyncOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncOperation.swift; sourceTree = "<group>"; };
 		38E82B661A40763700EFDC81 /* DiskCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiskCache.swift; sourceTree = "<group>"; };
@@ -71,6 +74,9 @@
 		6A0A1CF31A40AFCD0035A03C /* Configuration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		6A5A0CAB1CA4439F0075198F /* TestServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestServer.swift; sourceTree = "<group>"; };
 		6A5A0CAD1CA445890075198F /* Swifter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Swifter.framework; path = Carthage/Build/iOS/Swifter.framework; sourceTree = "<group>"; };
+		6A5A0CB01CA652030075198F /* ConfigurationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConfigurationTests.swift; sourceTree = "<group>"; };
+		6A5A0CB21CA653BB0075198F /* DisplayOptionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DisplayOptionsTests.swift; sourceTree = "<group>"; };
+		6A5A0CB41CA65B130075198F /* DiskCacheTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiskCacheTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,7 +159,10 @@
 		38E82B511A40747C00EFDC81 /* PinwheelTests */ = {
 			isa = PBXGroup;
 			children = (
-				38E82B541A40747C00EFDC81 /* PinwheelTests.swift */,
+				38E82B541A40747C00EFDC81 /* ImageLoaderTests.swift */,
+				6A5A0CB21CA653BB0075198F /* DisplayOptionsTests.swift */,
+				6A5A0CB01CA652030075198F /* ConfigurationTests.swift */,
+				6A5A0CB41CA65B130075198F /* DiskCacheTests.swift */,
 				6A5A0CAB1CA4439F0075198F /* TestServer.swift */,
 				38E82B521A40747C00EFDC81 /* Supporting Files */,
 			);
@@ -310,8 +319,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6A5A0CB51CA65B130075198F /* DiskCacheTests.swift in Sources */,
+				6A5A0CB11CA652030075198F /* ConfigurationTests.swift in Sources */,
+				6A5A0CB31CA653BB0075198F /* DisplayOptionsTests.swift in Sources */,
 				6A5A0CAC1CA4439F0075198F /* TestServer.swift in Sources */,
-				38E82B551A40747C00EFDC81 /* PinwheelTests.swift in Sources */,
+				38E82B551A40747C00EFDC81 /* ImageLoaderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

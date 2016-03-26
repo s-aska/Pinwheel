@@ -59,6 +59,4 @@ public protocol ImageLoadingProgressListener {
 public protocol DownlaodListener: class {
 
     func onStart()
-
-    func onCancel()
 }
