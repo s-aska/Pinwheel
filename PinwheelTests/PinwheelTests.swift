@@ -67,12 +67,13 @@ class PinwheelTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        ImageLoader.cancelAllRequest()
+        ImageLoader.setup(Configuration.Builder().debug().build())
         do {
             try self.server.start()
         } catch {
             XCTFail("Failed to start server")
         }
-        ImageLoader.setup(Configuration.Builder().debug().build())
     }
 
     override func tearDown() {

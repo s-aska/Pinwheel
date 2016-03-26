@@ -193,7 +193,7 @@ public class ImageLoader {
             let key = url.absoluteString
             Static.downloadQueue
                 .operations
-                .filter({ $0.name == key && ($0.ready || $0.executing) })
+                .filter({ $0.name == key && !$0.finished })
                 .forEach({ $0.cancel() })
             op.finish()
         }))
@@ -209,11 +209,21 @@ public class ImageLoader {
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, UInt(0)), {
                     Static.downloadQueue
                         .operations
-                        .filter({ $0.name == key && ($0.ready || $0.executing) })
+                        .filter({ $0.name == key && !$0.finished })
                         .forEach({ $0.cancel() })
                     op.finish()
                 })
             }
+        }))
+    }
+
+    public class func cancelAllRequest() {
+        Static.requestQueue.addOperation(AsyncBlockOperation({ op in
+            Static.downloadQueue
+                .operations
+                .filter({ !$0.finished })
+                .forEach({ $0.cancel() })
+            op.finish()
         }))
     }
 
