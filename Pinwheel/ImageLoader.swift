@@ -231,9 +231,10 @@ public class ImageLoader {
     }
 
     public class func dumpDownloadQueue() {
+        NSLog("Pinwheel [debug] queue count:\(Static.downloadQueue.operationCount)")
         Static.downloadQueue.operations.forEach { (op) in
             if let op = op as? DownloadOperation {
-                NSLog("url:\(op.name ?? "-") state:\(op.state.rawValue)")
+                NSLog("Pinwheel [debug] queue url:\(op.name ?? "-") state:\(op.state.rawValue)")
             }
         }
     }
