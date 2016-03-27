@@ -20,23 +20,16 @@ class AccessRequestTests: XCTestCase {
         MemoryCache.sharedInstance().clear()
         ImageLoader.setup(Configuration.Builder().debug().build())
         ImageLoader.dumpDownloadQueue()
-        do {
-            try self.server.start(11452)
-            sleep(1)
-        } catch {
-            XCTFail("Failed to start server")
-        }
     }
 
     override func tearDown() {
         ImageLoader.dumpDownloadQueue()
         ImageLoader.cancelAllRequests()
-        server.stop()
         super.tearDown()
     }
 
     func getTestURL(path: String) -> NSURL {
-        guard let url = NSURL(string: "http://127.0.0.1:11452" + path) else {
+        guard let url = NSURL(string: "http://127.0.0.1:11451" + path) else {
             fatalError("Failed to getURL")
         }
         return url
@@ -57,7 +50,7 @@ class AccessRequestTests: XCTestCase {
         let options = DisplayOptions.Builder().build()
         ImageLoader.displayImage(getTestURL(path), imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
 
-        waitForExpectationsWithTimeout(3) { error in
+        waitForExpectationsWithTimeout(60) { error in
             ImageLoader.dumpDownloadQueue()
         }
     }
@@ -75,7 +68,7 @@ class AccessRequestTests: XCTestCase {
         let options = DisplayOptions.Builder().build()
         ImageLoader.displayImage(NSURL(), imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
 
-        waitForExpectationsWithTimeout(3) { error in
+        waitForExpectationsWithTimeout(60) { error in
             ImageLoader.dumpDownloadQueue()
         }
     }
@@ -95,7 +88,7 @@ class AccessRequestTests: XCTestCase {
         let options = DisplayOptions.Builder().build()
         ImageLoader.displayImage(getTestURL(path), imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
 
-        waitForExpectationsWithTimeout(3) { error in
+        waitForExpectationsWithTimeout(60) { error in
             ImageLoader.dumpDownloadQueue()
         }
     }
@@ -112,7 +105,7 @@ class AccessRequestTests: XCTestCase {
         let options = DisplayOptions.Builder().build()
         ImageLoader.displayImage(getTestURL(path), imageView: UIImageView(), options: options, loadingListener: listener)
 
-        waitForExpectationsWithTimeout(3) { error in
+        waitForExpectationsWithTimeout(60) { error in
             ImageLoader.dumpDownloadQueue()
         }
     }

@@ -20,18 +20,11 @@ class DisplayOptionsTests: XCTestCase {
         MemoryCache.sharedInstance().clear()
         ImageLoader.setup(Configuration.Builder().debug().build())
         ImageLoader.dumpDownloadQueue()
-        do {
-            try self.server.start(11451)
-            sleep(1)
-        } catch {
-            XCTFail("Failed to start server")
-        }
     }
 
     override func tearDown() {
         ImageLoader.dumpDownloadQueue()
         ImageLoader.cancelAllRequests()
-        server.stop()
         super.tearDown()
     }
 
@@ -68,7 +61,7 @@ class DisplayOptionsTests: XCTestCase {
 
         ImageLoader.displayImage(getTestURL("/black.png"), imageView: UIImageView(), options: options)
 
-        waitForExpectationsWithTimeout(3, handler: nil)
+        waitForExpectationsWithTimeout(60, handler: nil)
     }
 
     func testDisplayOptionsEmptyUri() {
@@ -93,7 +86,7 @@ class DisplayOptionsTests: XCTestCase {
 
         ImageLoader.displayImage(NSURL(), imageView: UIImageView(), options: options)
 
-        waitForExpectationsWithTimeout(3, handler: nil)
+        waitForExpectationsWithTimeout(60, handler: nil)
     }
 
     func testDisplayOptionsInvalidData() {
@@ -115,7 +108,7 @@ class DisplayOptionsTests: XCTestCase {
 
         ImageLoader.displayImage(getTestURL("/index.html"), imageView: UIImageView(), options: options)
 
-        waitForExpectationsWithTimeout(3, handler: nil)
+        waitForExpectationsWithTimeout(60, handler: nil)
     }
 
     func testDisplayOptionsTimeout() {
@@ -140,7 +133,7 @@ class DisplayOptionsTests: XCTestCase {
 
         ImageLoader.displayImage(getTestURL("/large.png"), imageView: UIImageView(), options: options)
 
-        waitForExpectationsWithTimeout(5, handler: nil)
+        waitForExpectationsWithTimeout(60, handler: nil)
     }
 
     func testDisplayOptionsNetworkError() {
@@ -165,6 +158,6 @@ class DisplayOptionsTests: XCTestCase {
 
         ImageLoader.displayImage(NSURL(string: "http://example.jp/")!, imageView: UIImageView(), options: options)
 
-        waitForExpectationsWithTimeout(3, handler: nil)
+        waitForExpectationsWithTimeout(60, handler: nil)
     }
 }

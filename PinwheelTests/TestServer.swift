@@ -12,6 +12,10 @@ import Swifter
 class TestServer {
     let server: HttpServer
 
+    struct Static {
+        static let sharedInstance = TestServer().start(11451)
+    }
+
     init() {
         server = HttpServer()
 
@@ -46,8 +50,13 @@ class TestServer {
         }
     }
 
-    func start(port: in_port_t) throws {
-        try server.start(port)
+    func start(port: in_port_t) -> TestServer {
+        do {
+            try server.start(port)
+        } catch {
+            fatalError("start failed")
+        }
+        return self
     }
 
     func stop() {

@@ -20,23 +20,16 @@ class CancelRequestTests: XCTestCase {
         MemoryCache.sharedInstance().clear()
         ImageLoader.setup(Configuration.Builder().debug().build())
         ImageLoader.dumpDownloadQueue()
-        do {
-            try self.server.start(11453)
-            sleep(1)
-        } catch {
-            XCTFail("Failed to start server")
-        }
     }
 
     override func tearDown() {
         ImageLoader.dumpDownloadQueue()
         ImageLoader.cancelAllRequests()
-        server.stop()
         super.tearDown()
     }
 
     func getTestURL(path: String) -> NSURL {
-        guard let url = NSURL(string: "http://127.0.0.1:11453" + path) else {
+        guard let url = NSURL(string: "http://127.0.0.1:11451" + path) else {
             fatalError("Failed to getURL")
         }
         return url
@@ -59,7 +52,7 @@ class CancelRequestTests: XCTestCase {
 
         ImageLoader.cancelRequest(getTestURL(path))
 
-        waitForExpectationsWithTimeout(3, handler: nil)
+        waitForExpectationsWithTimeout(60, handler: nil)
     }
 
     func testListenerForCancelByUIImageView() {
@@ -80,6 +73,6 @@ class CancelRequestTests: XCTestCase {
 
         ImageLoader.cancelRequest(imageView)
 
-        waitForExpectationsWithTimeout(3, handler: nil)
+        waitForExpectationsWithTimeout(60, handler: nil)
     }
 }
