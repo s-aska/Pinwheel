@@ -1,5 +1,5 @@
 //
-//  PinwheelTests.swift
+//  AccessRequestTests.swift
 //  PinwheelTests
 //
 //  Created by Shinichiro Aska on 12/15/16.
@@ -10,7 +10,7 @@ import UIKit
 import XCTest
 import Pinwheel
 
-class ImageLoaderTests: XCTestCase {
+class AccessRequestTests: XCTestCase {
 
     let server = TestServer()
 
@@ -29,6 +29,7 @@ class ImageLoaderTests: XCTestCase {
 
     override func tearDown() {
         ImageLoader.dumpDownloadQueue()
+        ImageLoader.cancelAllRequests()
         server.stop()
         super.tearDown()
     }

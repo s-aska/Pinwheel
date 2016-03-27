@@ -29,6 +29,7 @@ class DisplayOptionsTests: XCTestCase {
 
     override func tearDown() {
         ImageLoader.dumpDownloadQueue()
+        ImageLoader.cancelAllRequests()
         server.stop()
         super.tearDown()
     }

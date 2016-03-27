@@ -220,12 +220,9 @@ public class ImageLoader {
         }))
     }
 
-    public class func cancelAllRequest() {
+    public class func cancelAllRequests() {
         Static.requestQueue.addOperation(AsyncBlockOperation({ op in
-            Static.downloadQueue
-                .operations
-                .filter({ !$0.finished })
-                .forEach({ $0.cancel() })
+            Static.downloadQueue.cancelAllOperations()
             op.finish()
         }))
     }
