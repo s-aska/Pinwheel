@@ -22,6 +22,7 @@ class CancelRequestTests: XCTestCase {
         ImageLoader.dumpDownloadQueue()
         do {
             try self.server.start(11453)
+            sleep(1)
         } catch {
             XCTFail("Failed to start server")
         }

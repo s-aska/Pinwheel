@@ -22,6 +22,7 @@ class AccessRequestTests: XCTestCase {
         ImageLoader.dumpDownloadQueue()
         do {
             try self.server.start(11452)
+            sleep(1)
         } catch {
             XCTFail("Failed to start server")
         }
