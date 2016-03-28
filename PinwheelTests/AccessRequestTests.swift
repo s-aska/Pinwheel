@@ -12,8 +12,6 @@ import Pinwheel
 
 class AccessRequestTests: XCTestCase {
 
-    let server = TestServer()
-
     override func setUp() {
         super.setUp()
         DiskCache.sharedInstance().clear()
@@ -41,7 +39,7 @@ class AccessRequestTests: XCTestCase {
         let options = DisplayOptions.Builder().build()
         ImageLoader.displayImage(NSURL(string: "https://justaway.info/img/logo.png")!, imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
 
-        waitForExpectationsWithTimeout(60) { error in
+        waitForExpectationsWithTimeout(3) { error in
             ImageLoader.dumpDownloadQueue()
         }
     }
@@ -59,7 +57,7 @@ class AccessRequestTests: XCTestCase {
         let options = DisplayOptions.Builder().build()
         ImageLoader.displayImage(NSURL(), imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
 
-        waitForExpectationsWithTimeout(60) { error in
+        waitForExpectationsWithTimeout(3) { error in
             ImageLoader.dumpDownloadQueue()
         }
     }
@@ -77,7 +75,7 @@ class AccessRequestTests: XCTestCase {
         let options = DisplayOptions.Builder().build()
         ImageLoader.displayImage(NSURL(string: "https://justaway.info/img/error.png")!, imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
 
-        waitForExpectationsWithTimeout(60) { error in
+        waitForExpectationsWithTimeout(3) { error in
             ImageLoader.dumpDownloadQueue()
         }
     }
@@ -92,7 +90,7 @@ class AccessRequestTests: XCTestCase {
         let options = DisplayOptions.Builder().build()
         ImageLoader.displayImage(NSURL(string: "https://justaway.info/")!, imageView: UIImageView(), options: options, loadingListener: listener)
 
-        waitForExpectationsWithTimeout(60) { error in
+        waitForExpectationsWithTimeout(3) { error in
             ImageLoader.dumpDownloadQueue()
         }
     }

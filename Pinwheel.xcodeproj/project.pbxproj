@@ -22,9 +22,6 @@
 		38E82B6D1A40773900EFDC81 /* Displayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38E82B6C1A40773900EFDC81 /* Displayer.swift */; };
 		38E82B6F1A4087D600EFDC81 /* Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38E82B6E1A4087D600EFDC81 /* Protocol.swift */; };
 		6A0A1CF41A40AFCD0035A03C /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A0A1CF31A40AFCD0035A03C /* Configuration.swift */; };
-		6A5A0CAC1CA4439F0075198F /* TestServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5A0CAB1CA4439F0075198F /* TestServer.swift */; };
-		6A5A0CAE1CA445890075198F /* Swifter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A5A0CAD1CA445890075198F /* Swifter.framework */; };
-		6A5A0CAF1CA445970075198F /* Swifter.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6A5A0CAD1CA445890075198F /* Swifter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6A5A0CB11CA652030075198F /* ConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5A0CB01CA652030075198F /* ConfigurationTests.swift */; };
 		6A5A0CB31CA653BB0075198F /* DisplayOptionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5A0CB21CA653BB0075198F /* DisplayOptionsTests.swift */; };
 		6A5A0CB51CA65B130075198F /* DiskCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5A0CB41CA65B130075198F /* DiskCacheTests.swift */; };
@@ -49,7 +46,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				6A5A0CAF1CA445970075198F /* Swifter.framework in CopyFiles */,
 				389F37E11CA418B70044A424 /* CryptoSwift.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -74,7 +70,6 @@
 		38E82B6E1A4087D600EFDC81 /* Protocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Protocol.swift; sourceTree = "<group>"; };
 		38E82B891A42796300EFDC81 /* Pinwheel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Pinwheel.h; sourceTree = "<group>"; };
 		6A0A1CF31A40AFCD0035A03C /* Configuration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
-		6A5A0CAB1CA4439F0075198F /* TestServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestServer.swift; sourceTree = "<group>"; };
 		6A5A0CAD1CA445890075198F /* Swifter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Swifter.framework; path = Carthage/Build/iOS/Swifter.framework; sourceTree = "<group>"; };
 		6A5A0CB01CA652030075198F /* ConfigurationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConfigurationTests.swift; sourceTree = "<group>"; };
 		6A5A0CB21CA653BB0075198F /* DisplayOptionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DisplayOptionsTests.swift; sourceTree = "<group>"; };
@@ -98,7 +93,6 @@
 			files = (
 				38E82B4E1A40747C00EFDC81 /* Pinwheel.framework in Frameworks */,
 				389F37DF1CA417C80044A424 /* CryptoSwift.framework in Frameworks */,
-				6A5A0CAE1CA445890075198F /* Swifter.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -168,7 +162,6 @@
 				6A5A0CB21CA653BB0075198F /* DisplayOptionsTests.swift */,
 				6A5A0CB01CA652030075198F /* ConfigurationTests.swift */,
 				6A5A0CB41CA65B130075198F /* DiskCacheTests.swift */,
-				6A5A0CAB1CA4439F0075198F /* TestServer.swift */,
 				6A5A0CB81CA65F1C0075198F /* TestListener.swift */,
 				38E82B521A40747C00EFDC81 /* Supporting Files */,
 			);
@@ -330,7 +323,6 @@
 				6A5A0CB11CA652030075198F /* ConfigurationTests.swift in Sources */,
 				6A5A0CB31CA653BB0075198F /* DisplayOptionsTests.swift in Sources */,
 				6A5A0CB91CA65F1C0075198F /* TestListener.swift in Sources */,
-				6A5A0CAC1CA4439F0075198F /* TestServer.swift in Sources */,
 				38E82B551A40747C00EFDC81 /* AccessRequestTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -12,8 +12,6 @@ import Pinwheel
 
 class DisplayOptionsTests: XCTestCase {
 
-    let server = TestServer()
-
     override func setUp() {
         super.setUp()
         DiskCache.sharedInstance().clear()
@@ -54,7 +52,7 @@ class DisplayOptionsTests: XCTestCase {
 
         ImageLoader.displayImage(NSURL(string: "https://justaway.info/img/logo.png")!, imageView: UIImageView(), options: options)
 
-        waitForExpectationsWithTimeout(60, handler: nil)
+        waitForExpectationsWithTimeout(3, handler: nil)
     }
 
     func testDisplayOptionsEmptyUri() {
@@ -79,7 +77,7 @@ class DisplayOptionsTests: XCTestCase {
 
         ImageLoader.displayImage(NSURL(), imageView: UIImageView(), options: options)
 
-        waitForExpectationsWithTimeout(60, handler: nil)
+        waitForExpectationsWithTimeout(3, handler: nil)
     }
 
     func testDisplayOptionsInvalidData() {
@@ -101,7 +99,7 @@ class DisplayOptionsTests: XCTestCase {
 
         ImageLoader.displayImage(NSURL(string: "https://justaway.info/")!, imageView: UIImageView(), options: options)
 
-        waitForExpectationsWithTimeout(60, handler: nil)
+        waitForExpectationsWithTimeout(3, handler: nil)
     }
 
     func testDisplayOptionsTimeout() {
@@ -126,7 +124,7 @@ class DisplayOptionsTests: XCTestCase {
 
         ImageLoader.displayImage(NSURL(string: "http://127.0.0.1:11451/large.png")!, imageView: UIImageView(), options: options)
 
-        waitForExpectationsWithTimeout(60, handler: nil)
+        waitForExpectationsWithTimeout(3, handler: nil)
     }
 
     func testDisplayOptionsNetworkError() {
@@ -151,6 +149,6 @@ class DisplayOptionsTests: XCTestCase {
 
         ImageLoader.displayImage(NSURL(string: "http://example.jp/")!, imageView: UIImageView(), options: options)
 
-        waitForExpectationsWithTimeout(60, handler: nil)
+        waitForExpectationsWithTimeout(3, handler: nil)
     }
 }

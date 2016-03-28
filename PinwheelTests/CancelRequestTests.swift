@@ -12,8 +12,6 @@ import Pinwheel
 
 class CancelRequestTests: XCTestCase {
 
-    let server = TestServer()
-
     override func setUp() {
         super.setUp()
         DiskCache.sharedInstance().clear()
@@ -28,19 +26,10 @@ class CancelRequestTests: XCTestCase {
         super.tearDown()
     }
 
-    func getTestURL(path: String) -> NSURL {
-        guard let url = NSURL(string: "http://127.0.0.1:11451" + path) else {
-            fatalError("Failed to getURL")
-        }
-        return url
-    }
-
     func testListenerForCancelByURL() {
-        let path = "/large.png"
-
         let listener = TestListener()
-        listener.startedExpectation = expectationWithDescription(path + " started")
-        listener.cancelExpectation = expectationWithDescription(path + " cancel")
+        listener.startedExpectation = expectationWithDescription("started")
+        listener.cancelExpectation = expectationWithDescription("cancel")
         listener.failedOnFail = true
         listener.completeOnFail = true
 
@@ -48,20 +37,19 @@ class CancelRequestTests: XCTestCase {
         progressListener.progressOnFail = true
 
         let options = DisplayOptions.Builder().build()
-        ImageLoader.displayImage(getTestURL(path), imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
+        ImageLoader.displayImage(NSURL(string: "https://delay-api.herokuapp.com/")!, imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
 
-        ImageLoader.cancelRequest(getTestURL(path))
+        ImageLoader.cancelRequest(NSURL(string: "https://delay-api.herokuapp.com/")!)
 
-        waitForExpectationsWithTimeout(60, handler: nil)
+        waitForExpectationsWithTimeout(3, handler: nil)
     }
 
     func testListenerForCancelByUIImageView() {
-        let path = "/large.png"
         let imageView = UIImageView()
 
         let listener = TestListener()
-        listener.startedExpectation = expectationWithDescription(path + " started")
-        listener.cancelExpectation = expectationWithDescription(path + " cancel")
+        listener.startedExpectation = expectationWithDescription("started")
+        listener.cancelExpectation = expectationWithDescription("cancel")
         listener.failedOnFail = true
         listener.completeOnFail = true
 
@@ -69,10 +57,10 @@ class CancelRequestTests: XCTestCase {
         progressListener.progressOnFail = true
 
         let options = DisplayOptions.Builder().build()
-        ImageLoader.displayImage(getTestURL(path), imageView: imageView, options: options, loadingListener: listener, loadingProgressListener: progressListener)
+        ImageLoader.displayImage(NSURL(string: "https://delay-api.herokuapp.com/")!, imageView: imageView, options: options, loadingListener: listener, loadingProgressListener: progressListener)
 
         ImageLoader.cancelRequest(imageView)
 
-        waitForExpectationsWithTimeout(60, handler: nil)
+        waitForExpectationsWithTimeout(3, handler: nil)
     }
 }
