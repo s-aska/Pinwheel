@@ -28,27 +28,18 @@ class AccessRequestTests: XCTestCase {
         super.tearDown()
     }
 
-    func getTestURL(path: String) -> NSURL {
-        guard let url = NSURL(string: "http://127.0.0.1:11451" + path) else {
-            fatalError("Failed to getURL")
-        }
-        return url
-    }
-
     func testListenerForSuccess() {
-        let path = "/black.png"
-
         let listener = TestListener()
-        listener.startedExpectation = expectationWithDescription(path + " started")
+        listener.startedExpectation = expectationWithDescription("started")
         listener.cancelOnFail = true
         listener.failedOnFail = true
-        listener.completeExpectation = expectationWithDescription(path + " complete")
+        listener.completeExpectation = expectationWithDescription("complete")
 
         let progressListener = TestProgressListener()
-        progressListener.progressExpectation = expectationWithDescription(path + " progress")
+        progressListener.progressExpectation = expectationWithDescription("progress")
 
         let options = DisplayOptions.Builder().build()
-        ImageLoader.displayImage(getTestURL(path), imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
+        ImageLoader.displayImage(NSURL(string: "https://justaway.info/img/logo.png")!, imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
 
         waitForExpectationsWithTimeout(60) { error in
             ImageLoader.dumpDownloadQueue()
@@ -74,19 +65,17 @@ class AccessRequestTests: XCTestCase {
     }
 
     func testListenerForNotFoundURL() {
-        let path = "/error.png"
-
         let listener = TestListener()
-        listener.startedExpectation = expectationWithDescription(path + " started")
+        listener.startedExpectation = expectationWithDescription("started")
         listener.cancelOnFail = true
-        listener.failedExpectation = expectationWithDescription(path + " failed")
+        listener.failedExpectation = expectationWithDescription("failed")
         listener.completeOnFail = true
 
         let progressListener = TestProgressListener()
-        progressListener.progressOnFail = true
+        progressListener.progressExpectation = expectationWithDescription("progress")
 
         let options = DisplayOptions.Builder().build()
-        ImageLoader.displayImage(getTestURL(path), imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
+        ImageLoader.displayImage(NSURL(string: "https://justaway.info/img/error.png")!, imageView: UIImageView(), options: options, loadingListener: listener, loadingProgressListener: progressListener)
 
         waitForExpectationsWithTimeout(60) { error in
             ImageLoader.dumpDownloadQueue()
@@ -94,16 +83,14 @@ class AccessRequestTests: XCTestCase {
     }
 
     func testListenerForInvalidContentType() {
-        let path = "/index.html"
-
         let listener = TestListener()
-        listener.startedExpectation = expectationWithDescription(path + " started")
+        listener.startedExpectation = expectationWithDescription("started")
         listener.cancelOnFail = true
-        listener.failedExpectation = expectationWithDescription(path + " failed")
+        listener.failedExpectation = expectationWithDescription("failed")
         listener.completeOnFail = true
 
         let options = DisplayOptions.Builder().build()
-        ImageLoader.displayImage(getTestURL(path), imageView: UIImageView(), options: options, loadingListener: listener)
+        ImageLoader.displayImage(NSURL(string: "https://justaway.info/")!, imageView: UIImageView(), options: options, loadingListener: listener)
 
         waitForExpectationsWithTimeout(60) { error in
             ImageLoader.dumpDownloadQueue()

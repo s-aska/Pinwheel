@@ -28,13 +28,6 @@ class DisplayOptionsTests: XCTestCase {
         super.tearDown()
     }
 
-    func getTestURL(path: String) -> NSURL {
-        guard let url = NSURL(string: "http://127.0.0.1:11451" + path) else {
-            fatalError("Failed to getURL")
-        }
-        return url
-    }
-
     func testDisplayOptions() {
         let options = DisplayOptions.Builder()
             .queuePriority(NSOperationQueuePriority.VeryLow)
@@ -59,7 +52,7 @@ class DisplayOptionsTests: XCTestCase {
             }
             .build()
 
-        ImageLoader.displayImage(getTestURL("/black.png"), imageView: UIImageView(), options: options)
+        ImageLoader.displayImage(NSURL(string: "https://justaway.info/img/logo.png")!, imageView: UIImageView(), options: options)
 
         waitForExpectationsWithTimeout(60, handler: nil)
     }
@@ -106,7 +99,7 @@ class DisplayOptionsTests: XCTestCase {
             }
             .build()
 
-        ImageLoader.displayImage(getTestURL("/index.html"), imageView: UIImageView(), options: options)
+        ImageLoader.displayImage(NSURL(string: "https://justaway.info/")!, imageView: UIImageView(), options: options)
 
         waitForExpectationsWithTimeout(60, handler: nil)
     }
@@ -131,7 +124,7 @@ class DisplayOptionsTests: XCTestCase {
             }
             .build()
 
-        ImageLoader.displayImage(getTestURL("/large.png"), imageView: UIImageView(), options: options)
+        ImageLoader.displayImage(NSURL(string: "http://127.0.0.1:11451/large.png")!, imageView: UIImageView(), options: options)
 
         waitForExpectationsWithTimeout(60, handler: nil)
     }
