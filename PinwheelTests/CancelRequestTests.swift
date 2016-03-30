@@ -42,6 +42,8 @@ class CancelRequestTests: XCTestCase {
         ImageLoader.cancelRequest(NSURL(string: "https://delay-api.herokuapp.com/")!)
 
         waitForExpectationsWithTimeout(3, handler: nil)
+
+        XCTAssertEqual(ImageLoader.downloadQueueCount, 0, "downloadQueueCount")
     }
 
     func testListenerForCancelByUIImageView() {
@@ -62,5 +64,52 @@ class CancelRequestTests: XCTestCase {
         ImageLoader.cancelRequest(imageView)
 
         waitForExpectationsWithTimeout(3, handler: nil)
+
+        XCTAssertEqual(ImageLoader.downloadQueueCount, 0, "downloadQueueCount")
+    }
+
+    func testListenerForCancelAllRequests() {
+        let imageView = UIImageView()
+
+        let listener = TestListener()
+        listener.startedExpectation = expectationWithDescription("started")
+        listener.cancelExpectation = expectationWithDescription("cancel")
+        listener.failedOnFail = true
+        listener.completeOnFail = true
+
+        let progressListener = TestProgressListener()
+        progressListener.progressOnFail = true
+
+        let options = DisplayOptions.Builder().build()
+        ImageLoader.displayImage(NSURL(string: "https://delay-api.herokuapp.com/")!, imageView: imageView, options: options, loadingListener: listener, loadingProgressListener: progressListener)
+
+        ImageLoader.cancelAllRequests()
+
+        waitForExpectationsWithTimeout(3, handler: nil)
+
+        XCTAssertEqual(ImageLoader.downloadQueueCount, 0, "downloadQueueCount")
+    }
+
+    func testListenerForCancelRequestBeforeStart() {
+        let imageView = UIImageView()
+
+        let listener = TestListener()
+        listener.startedOnFail = true
+        listener.cancelExpectation = expectationWithDescription("cancel")
+        listener.failedOnFail = true
+        listener.completeOnFail = true
+
+        let options = DisplayOptions.Builder().build()
+
+        ImageLoader.downloadQueueSuspend = true
+        ImageLoader.displayImage(NSURL(string: "http://example.jp/1.png")!, imageView: imageView, options: options, loadingListener: listener)
+        ImageLoader.dumpDownloadQueue()
+        ImageLoader.cancelAllRequests()
+
+        waitForExpectationsWithTimeout(3, handler: nil)
+
+        XCTAssertEqual(ImageLoader.downloadQueueCount, 0, "downloadQueueCount")
+
+        ImageLoader.downloadQueueSuspend = false
     }
 }

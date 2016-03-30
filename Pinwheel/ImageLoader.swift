@@ -53,6 +53,15 @@ public class ImageLoader {
         get { return Static.config.isDebug }
     }
 
+    public class var downloadQueueSuspend: Bool {
+        get { return Static.downloadQueue.suspended }
+        set { Static.downloadQueue.suspended = newValue }
+    }
+
+    public class var downloadQueueCount: Int {
+        get { return Static.downloadQueue.operationCount }
+    }
+
     // MARK: - Request
 
     class Request {

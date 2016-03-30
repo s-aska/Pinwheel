@@ -93,6 +93,7 @@ class AsyncBlockOperation: AsyncOperation {
 class DownloadOperation: AsyncOperation {
 
     let task: NSURLSessionDownloadTask
+    var stated = false
     weak var listener: DownlaodListener?
 
     init(task: NSURLSessionDownloadTask, name: String, listener: DownlaodListener) {
@@ -107,6 +108,7 @@ class DownloadOperation: AsyncOperation {
         state = .Executing
         task.resume()
         listener?.onStart()
+        stated = true
     }
 
     override func cancel() {
@@ -117,9 +119,13 @@ class DownloadOperation: AsyncOperation {
     }
 
     func finish() {
-        if state != .Finished {
-            state = .Finished
+        if state == .Finished {
+            return
         }
+        if !stated {
+            state = .Executing
+        }
+        state = .Finished
     }
 
 }
