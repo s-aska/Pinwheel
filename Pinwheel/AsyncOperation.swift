@@ -122,9 +122,12 @@ class DownloadOperation: AsyncOperation {
         if state == .Finished {
             return
         }
+
+        // Fix warning message `went isFinished=YES without being started by the queue it is in`
         if !stated {
             state = .Executing
         }
+
         state = .Finished
     }
 
