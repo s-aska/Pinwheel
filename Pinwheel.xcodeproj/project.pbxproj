@@ -22,6 +22,8 @@
 		38E82B6D1A40773900EFDC81 /* Displayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38E82B6C1A40773900EFDC81 /* Displayer.swift */; };
 		38E82B6F1A4087D600EFDC81 /* Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38E82B6E1A4087D600EFDC81 /* Protocol.swift */; };
 		6A0A1CF41A40AFCD0035A03C /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A0A1CF31A40AFCD0035A03C /* Configuration.swift */; };
+		6A396A731CD8B09000E878E5 /* OHHTTPStubs.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6A396A721CD8B09000E878E5 /* OHHTTPStubs.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		6A396A741CD8B09E00E878E5 /* OHHTTPStubs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A396A721CD8B09000E878E5 /* OHHTTPStubs.framework */; };
 		6A5A0CB11CA652030075198F /* ConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5A0CB01CA652030075198F /* ConfigurationTests.swift */; };
 		6A5A0CB31CA653BB0075198F /* DisplayOptionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5A0CB21CA653BB0075198F /* DisplayOptionsTests.swift */; };
 		6A5A0CB51CA65B130075198F /* DiskCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5A0CB41CA65B130075198F /* DiskCacheTests.swift */; };
@@ -47,6 +49,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				389F37E11CA418B70044A424 /* CryptoSwift.framework in CopyFiles */,
+				6A396A731CD8B09000E878E5 /* OHHTTPStubs.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,6 +73,7 @@
 		38E82B6E1A4087D600EFDC81 /* Protocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Protocol.swift; sourceTree = "<group>"; };
 		38E82B891A42796300EFDC81 /* Pinwheel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Pinwheel.h; sourceTree = "<group>"; };
 		6A0A1CF31A40AFCD0035A03C /* Configuration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
+		6A396A721CD8B09000E878E5 /* OHHTTPStubs.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OHHTTPStubs.framework; path = Carthage/Build/iOS/OHHTTPStubs.framework; sourceTree = "<group>"; };
 		6A5A0CAD1CA445890075198F /* Swifter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Swifter.framework; path = Carthage/Build/iOS/Swifter.framework; sourceTree = "<group>"; };
 		6A5A0CB01CA652030075198F /* ConfigurationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConfigurationTests.swift; sourceTree = "<group>"; };
 		6A5A0CB21CA653BB0075198F /* DisplayOptionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DisplayOptionsTests.swift; sourceTree = "<group>"; };
@@ -93,6 +97,7 @@
 			files = (
 				38E82B4E1A40747C00EFDC81 /* Pinwheel.framework in Frameworks */,
 				389F37DF1CA417C80044A424 /* CryptoSwift.framework in Frameworks */,
+				6A396A741CD8B09E00E878E5 /* OHHTTPStubs.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,6 +109,7 @@
 			children = (
 				6A5A0CAD1CA445890075198F /* Swifter.framework */,
 				389F37D71CA3FBC30044A424 /* CryptoSwift.framework */,
+				6A396A721CD8B09000E878E5 /* OHHTTPStubs.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

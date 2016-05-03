@@ -9,6 +9,7 @@
 import Foundation
 import XCTest
 import Pinwheel
+import OHHTTPStubs
 
 class DisplayOptionsTests: XCTestCase {
 
@@ -16,6 +17,7 @@ class DisplayOptionsTests: XCTestCase {
         super.setUp()
         DiskCache.sharedInstance().clear()
         MemoryCache.sharedInstance().clear()
+        ImageLoader.useBackground = false
         ImageLoader.setup(Configuration.Builder().debug().build())
         ImageLoader.dumpDownloadQueue()
     }
@@ -50,7 +52,22 @@ class DisplayOptionsTests: XCTestCase {
             }
             .build()
 
-        ImageLoader.displayImage(NSURL(string: "https://justaway.info/img/logo.png")!, imageView: UIImageView(), options: options)
+        let rect = CGRect.init(x: 0.0, y: 0.0, width: 1.0, height: 1.0)
+        UIGraphicsBeginImageContext(rect.size)
+        let context = UIGraphicsGetCurrentContext()
+        CGContextSetFillColorWithColor(context, UIColor.blackColor().CGColor)
+        CGContextFillRect(context, rect)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        guard let data = UIImagePNGRepresentation(image) else {
+            fatalError("UIImagePNGRepresentation failure")
+        }
+
+        stub(isHost("pinwheel-test-ok.org")) { _ in
+            return OHHTTPStubsResponse.init(data: data, statusCode: 200, headers: ["Content-Type":"image/jpeg"])
+        }
+
+        ImageLoader.displayImage(NSURL(string: "https://pinwheel-test-ok.org/img/logo.png")!, imageView: UIImageView(), options: options)
 
         waitForExpectationsWithTimeout(3, handler: nil)
     }
@@ -97,7 +114,11 @@ class DisplayOptionsTests: XCTestCase {
             }
             .build()
 
-        ImageLoader.displayImage(NSURL(string: "https://justaway.info/")!, imageView: UIImageView(), options: options)
+        stub(isHost("pinwheel-test-delay-invalid-data.org")) { _ in
+            return OHHTTPStubsResponse.init(data: NSData(), statusCode: 200, headers: ["Content-Type":"image/jpeg"])
+        }
+
+        ImageLoader.displayImage(NSURL(string: "http://pinwheel-test-delay-invalid-data.org/")!, imageView: UIImageView(), options: options)
 
         waitForExpectationsWithTimeout(3, handler: nil)
     }
@@ -122,7 +143,11 @@ class DisplayOptionsTests: XCTestCase {
             }
             .build()
 
-        ImageLoader.displayImage(NSURL(string: "http://127.0.0.1:11451/large.png")!, imageView: UIImageView(), options: options)
+        stub(isHost("pinwheel-test-delay-timeout.org")) { _ in
+            return OHHTTPStubsResponse.init(data: NSData(), statusCode: 200, headers: ["Content-Type":"image/jpeg"]).requestTime(1.5, responseTime: 2.0)
+        }
+
+        ImageLoader.displayImage(NSURL(string: "http://pinwheel-test-delay-timeout.org/")!, imageView: UIImageView(), options: options)
 
         waitForExpectationsWithTimeout(3, handler: nil)
     }

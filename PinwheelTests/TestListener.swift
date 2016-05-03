@@ -54,6 +54,7 @@ class TestProgressListener: ImageLoadingProgressListener {
     var progressOnFail = false
     internal func onProgressUpdate(url: NSURL, imageView: UIImageView, current: Int64, total: Int64) {
         progressExpectation?.fulfill()
+        progressExpectation = nil
         if progressOnFail {
             XCTFail("onProgressUpdate")
         }

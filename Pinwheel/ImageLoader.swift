@@ -42,6 +42,7 @@ public class ImageLoader {
             queue.maxConcurrentOperationCount = 1
             return queue
         }()
+        private static var useBackground = false
     }
 
     public class var suspend: Bool {
@@ -51,6 +52,11 @@ public class ImageLoader {
 
     public class var isDebug: Bool {
         get { return Static.config.isDebug }
+    }
+
+    public class var useBackground: Bool {
+        get { return Static.useBackground }
+        set { Static.useBackground = newValue }
     }
 
     public class var downloadQueueSuspend: Bool {
@@ -422,7 +428,9 @@ public class ImageLoader {
             self.request = request
             super.init()
 
-            let config = NSURLSessionConfiguration.backgroundSessionConfigurationWithIdentifier(request.memoryCaheKey + String(NSDate().hashValue))
+            let config = Static.useBackground
+                ? NSURLSessionConfiguration.backgroundSessionConfigurationWithIdentifier(request.memoryCaheKey + String(NSDate().hashValue))
+                : NSURLSessionConfiguration.defaultSessionConfiguration()
 
             if let timeoutIntervalForRequest = request.options.timeoutIntervalForRequest ?? Static.config.defaultTimeoutIntervalForRequest {
                 config.timeoutIntervalForRequest = timeoutIntervalForRequest

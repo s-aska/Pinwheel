@@ -17,4 +17,4 @@ dependencies:
         timeout: 300
 test:
   override:
-    - xctool -project Pinwheel.xcodeproj -scheme PinwheelTests -sdk iphonesimulator -configuration Release build test
+    - xctool -project Pinwheel.xcodeproj -scheme Pinwheel -sdk iphonesimulator -configuration Release build test
