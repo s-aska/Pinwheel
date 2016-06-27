@@ -13,11 +13,9 @@ class AsyncOperation: NSOperation {
     // MARK: - Types
 
     enum State: String {
-        case Waiting = "isWaiting"
         case Ready = "isReady"
         case Executing = "isExecuting"
         case Finished = "isFinished"
-        case Cancelled = "isCancelled"
     }
 
     // MARK: - Properties
@@ -54,10 +52,6 @@ class AsyncOperation: NSOperation {
         return state == .Finished
     }
 
-    override var cancelled: Bool {
-        return state == .Cancelled
-    }
-
     override var asynchronous: Bool {
         return true
     }
@@ -81,7 +75,7 @@ class AsyncBlockOperation: AsyncOperation {
 
     override func cancel() {
         super.cancel()
-        state = .Cancelled
+        state = .Finished
     }
 
     func finish() {
@@ -93,7 +87,6 @@ class AsyncBlockOperation: AsyncOperation {
 class DownloadOperation: AsyncOperation {
 
     let task: NSURLSessionDownloadTask
-    var stated = false
     weak var listener: DownlaodListener?
 
     init(task: NSURLSessionDownloadTask, name: String, listener: DownlaodListener) {
@@ -108,27 +101,25 @@ class DownloadOperation: AsyncOperation {
         state = .Executing
         task.resume()
         listener?.onStart()
-        stated = true
     }
 
     override func cancel() {
         super.cancel()
-        state = .Cancelled
         task.cancel()
         finish()
     }
 
     func finish() {
-        if state == .Finished {
-            return
-        }
-
-        // Fix warning message `went isFinished=YES without being started by the queue it is in`
-        if !stated {
+        switch state {
+        case .Ready:
+            // Fix warning message `went isFinished=YES without being started by the queue it is in`
             state = .Executing
+            state = .Finished
+        case .Executing:
+            state = .Finished
+        case .Finished:
+            break
         }
-
-        state = .Finished
     }
 
 }

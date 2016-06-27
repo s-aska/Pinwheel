@@ -17,7 +17,6 @@ class DisplayOptionsTests: XCTestCase {
         super.setUp()
         DiskCache.sharedInstance().clear()
         MemoryCache.sharedInstance().clear()
-        ImageLoader.useBackground = false
         ImageLoader.setup(Configuration.Builder().debug().build())
         ImageLoader.dumpDownloadQueue()
     }
