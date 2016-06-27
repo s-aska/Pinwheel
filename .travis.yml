@@ -5,7 +5,7 @@ xcode_sdk: iphonesimulator
 osx_image: xcode7.3
 before_install:
   - brew update
-  - brew install carthage
+  - brew outdated carthage || brew upgrade carthage
 before_script:
   # bootstrap the dependencies for the project
   # you can remove if you don't have dependencies
